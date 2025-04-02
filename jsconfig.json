@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "strict": true,
+    "allowJs": true,
+    "checkJs": true,
+    "target": "es2017",
+    "declaration": true,
+    "noImplicitAny": true,
+  },
+  "include": [
+    "src/**/*.js",
+    "types/**/*.ts",
+  ],
+}

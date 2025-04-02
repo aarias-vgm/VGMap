@@ -1,0 +1,146 @@
+[
+    {
+        "id": "barranquilla",
+        "name": "KAM Barranquilla",
+        "address": "Cra. XX #YY-ZZ",
+        "lat": 11.002689878603764,
+        "lng": -74.81448489302309,
+        "municipalityId": "08001",
+        "localityId": ""
+    },
+    {
+        "id": "bucaramanga",
+        "name": "KAM Bucaramanga",
+        "address": "Cra. XX #YY-ZZ",
+        "lat": 7.126714307270854,
+        "lng": -73.11446761061566,
+        "municipalityId": "68001",
+        "localityId": ""
+    },
+    {
+        "id": "cali",
+        "name": "KAM Cali",
+        "address": "Cra. XX #YY-ZZ",
+        "lat": 3.452424382685351,
+        "lng": -76.4931246763714,
+        "municipalityId": "76001",
+        "localityId": ""
+    },
+    {
+        "id": "cartagena",
+        "name": "KAM Cartagena",
+        "address": "Cra. XX #YY-ZZ",
+        "lat": 10.420495819286762,
+        "lng": -75.53385812286801,
+        "municipalityId": "13001",
+        "localityId": ""
+    },
+    {
+        "id": "cucuta",
+        "name": "KAM Cúcuta",
+        "address": "Cra. XX #YY-ZZ",
+        "lat": 7.89752044391865,
+        "lng": -72.5062011718628,
+        "municipalityId": "54001",
+        "localityId": ""
+    },
+    {
+        "id": "medellin",
+        "name": "KAM Medellín",
+        "address": "Cra. XX #YY-ZZ",
+        "lat": 6.262431895656156,
+        "lng": -75.56404755453853,
+        "municipalityId": "05001",
+        "localityId": ""
+    },
+    {
+        "id": "monteria",
+        "name": "KAM Montería",
+        "address": "Cra. XX #YY-ZZ",
+        "lat": 8.751549528798737,
+        "lng": -75.88373388085706,
+        "municipalityId": "23001",
+        "localityId": ""
+    },
+    {
+        "id": "neiva",
+        "name": "KAM Neiva",
+        "address": "Cra. XX #YY-ZZ",
+        "lat": 2.932486149243003,
+        "lng": -75.28494502446691,
+        "municipalityId": "41001",
+        "localityId": ""
+    },
+    {
+        "id": "pasto",
+        "name": "KAM Pasto",
+        "address": "Cra. XX #YY-ZZ",
+        "lat": 1.222545892365123,
+        "lng": -77.28277453386823,
+        "municipalityId": "52001",
+        "localityId": ""
+    },
+    {
+        "id": "pereira",
+        "name": "KAM Pereira",
+        "address": "Cra. XX #YY-ZZ",
+        "lat": 4.817888136171111,
+        "lng": -75.69976105300874,
+        "municipalityId": "66001",
+        "localityId": ""
+    },
+    {
+        "id": "sincelejo",
+        "name": "KAM Sincelejo",
+        "address": "Cra. XX #YY-ZZ",
+        "lat": 9.303929148438568,
+        "lng": -75.39277521496017,
+        "municipalityId": "70001",
+        "localityId": ""
+    },
+    {
+        "id": "chapinero",
+        "name": "KAM Chapinero",
+        "address": "Cra. XX #YY-ZZ",
+        "lat": 4.633794896229732,
+        "lng": -74.06733995774036,
+        "municipalityId": "11001",
+        "localityId": "1100102"
+    },
+    {
+        "id": "engativa",
+        "name": "KAM Engativá",
+        "address": "Cra. XX #YY-ZZ",
+        "lat": 4.7070992225391795,
+        "lng": -74.10950060822498,
+        "municipalityId": "11001",
+        "localityId": "1100110"
+    },
+    {
+        "id": "sancristobal",
+        "name": "KAM San Cristóbal",
+        "address": "Cra. XX #YY-ZZ",
+        "lat": 4.570360700521882,
+        "lng": -74.0884026481501,
+        "municipalityId": "11001",
+        "localityId": "1100104"
+    },
+    {
+        "id": "kennedy",
+        "name": "KAM Kennedy",
+        "address": "Cra. XX #YY-ZZ",
+        "lat": 4.616406790731776,
+        "lng": -74.15623608648288,
+        "municipalityId": "11001",
+        "localityId": "1100108"
+    },
+    {
+        "id": "valledupar",
+        "name": "KAM Valledupar",
+        "address": "Cra. XX #YY-ZZ",
+        "lat": 10.47088147604149,
+        "lng": -73.2538037172899,
+        "municipalityId": "20001",
+        "localityId": ""
+    }
+]
