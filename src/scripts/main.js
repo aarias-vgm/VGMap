@@ -36,7 +36,7 @@ async function run() {
     // await mapManager.calculatePlacesDistances(departmentsDict, departmentsDict, google.maps.TravelMode.DRIVING, true)
     //await mapManager.calculatePlacesDistances(hospitalsDict, sellersDict, google.maps.TravelMode.DRIVING, true)
     // await mapManager.calculatePlacesDistances(hospitalsDict, areasDict, google.maps.TravelMode.DRIVING, true)
-
+    
     // await assignHospitalsToSellers(hospitalsDict, sellersDict)
 
     // let sum = 0
@@ -70,11 +70,28 @@ async function run() {
     //         return accumulator;
     //     }, {});
 
-    // for (const [departmentId, department] of Object.entries(departmentsDict)) {
-    //     if (department.municipalities.includes(municipalityWithHospital)){
-    //         mapManager.addGeoJSON(`geojson/departments/${departmentId}.geojson`)
-    //     }
-    // }
+    for (const [departmentId, department] of Object.entries(departmentsDict)) {
+        mapManager.addGeoJSON(`geojson/departments/${departmentId}.geojson`)
+    }
+
+    const box = document.getElementById("box")
+
+    mapManager.map.map.data.setStyle({
+        zIndex: 0,
+        clickable: false,
+    })
+
+    if (box) {
+        // mapManager.map.map.data.addListener("mouseover", (/** @type {google.maps.Data.MouseEvent} */ event) => {
+        //     event.domEvent.stopPropagation()
+        //     box.style.left = event.domEvent.clientX + "px";
+        //     box.style.top =  event.domEvent.clientY + "px";
+        //     box.style.display = "block";
+        // });
+    }
+
+
+
     // mapManager.addGeoJSON(`geojson/departments/11.geojson`)
 
     // mapManager.addGeoJSON(`geojson/municipalities/${municipalitiesDict[municipalityWithHospital.id].id}.geojson`)
@@ -109,27 +126,34 @@ async function run() {
         await mapManager.createSellerMarker(sellers[i])
         sellerColors[sellers[i].id] = availableColors[i % availableColors.length - 1]
     }
-    
-    return
 
-    for (const [areaId, area] of Object.entries(areasDict)) {
-        if (area instanceof Municipality) {
-            if (!area.localities.length) {
-                await mapManager.addGeoJSON(`geojson/municipalities/${areaId}.geojson`)
-            }
-        } else {
-            await mapManager.addGeoJSON(`geojson/localities/${areaId}.geojson`)
-        }
-    }
+    console.log(sellers)
 
+    // Evento para mostrar el menú con click derecho
+    // mapManager.map.googleMap.addListener("rightclick", (event) => {
+    //     lastClickedCoords = { lat: event.latLng.lat(), lng: event.latLng.lng() };
+    //     contextMenu.style.left = event.pixel.x + "px";
+    //     contextMenu.style.top = event.pixel.y + "px";
+    //     contextMenu.style.display = "block";
+    // });
+
+    // for (const [areaId, area] of Object.entries(areasDict)) {
+    //     if (area instanceof Municipality) {
+    //         if (!area.localities.length) {
+    //             await mapManager.addGeoJSON(`geojson/municipalities/${areaId}.geojson`)
+    //         }
+    //     } else {
+    //         await mapManager.addGeoJSON(`geojson/localities/${areaId}.geojson`)
+    //     }
+    // }
 
     mapManager.map.map.data.setStyle((feature) => {
 
         let areaId = ""
-        
-        try{
+
+        try {
             areaId = feature.getId()
-        } catch(error){
+        } catch (error) {
             console.error(areaId)
         }
 
@@ -457,6 +481,7 @@ async function loadSellersDict(municipalitiesDict = null, localitiesDict = null)
 
                         if (locality) {
                             seller.locality = locality
+                            seller.locality.municipality = municipality
                         }
                     }
                 }
@@ -533,6 +558,10 @@ async function assignHospitalsToSellers(hospitalsDict, sellersDict) {
 
                             currentHospital.seller = currentSeller
                             currentSeller.hospitals.push(currentHospital)
+
+                            if (currentHospital.municipality.department.name === "Atlántico"){
+                                console.log("En Barranquilla me quedo. :v")
+                            }
                         }
 
                         currentPlace1Id = hospital.id

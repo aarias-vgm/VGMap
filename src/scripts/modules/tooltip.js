@@ -5,10 +5,10 @@
 
 /** @type {HTMLElement} */
 // @ts-ignore
-const nameTooltip = document.getElementById("name-tooltip")
+const inTooltip = document.getElementById("name-tooltip")
 /** @type {HTMLElement} */
 // @ts-ignore
-const infoTooltip = document.getElementById("info-tooltip")
+const clickTooltip = document.getElementById("info-tooltip")
 /** @type {HTMLElement} */
 // @ts-ignore
 const coordsTooltip = document.getElementById("coords-tooltip")
@@ -176,7 +176,7 @@ export class MapTooltipEventAdapter extends TooltipEventAdapter {
      * @return {google.maps.Data.Feature?} 
      */
     returnEventElement(event) {
-        return event.feature instanceof HTMLElement ? event.feature : null
+        return event instanceof google.maps.Data.Feature ? event.feature : null
     }
 }
 
@@ -187,21 +187,31 @@ export class MapTooltipEventAdapter extends TooltipEventAdapter {
  * @param {function((any)): string} returnHtml
  * @param {function | function[]} functions
  */
-function addNameTooltip(adapter, element, returnHtml, functions = []) {
-    const tooltip = nameTooltip;
-
+function addInTooltip(adapter, element, returnHtml, functions = []) {
+    const tooltip = inTooltip;
     adapter.onEvent(element, "in", (event) => {
         const target = adapter.returnEventElement(event)
-
-        if (!infoTooltip.classList.contains("visible")) {
+        if (!clickTooltip.classList.contains("visible")) {
             tooltip.innerHTML = returnHtml(target);
             functions = functions instanceof Array ? functions : [functions]
-            functions.forEach(f => f());
+            functions.forEach(f => f(event));
             tooltip.classList.replace("hidden", "visible");
         }
     });
+}
 
+/**
+ * 
+ * @param {TooltipEventAdapter} adapter
+ * @param {any} element
+ * @param {function | function[]} functions
+ */
+function addOutTooltip(adapter, element, functions = []) {
+    const tooltip = inTooltip;
     adapter.onEvent(element, "out", (event) => {
+        const target = adapter.returnEventElement(event)
+        functions = functions instanceof Array ? functions : [functions]
+        functions.forEach(f => f(event));
         tooltip.classList.replace("visible", "hidden");
     });
 }
@@ -213,29 +223,22 @@ function addNameTooltip(adapter, element, returnHtml, functions = []) {
  * @param {function((any)): string} returnHtml
  * @param {function | function[]} functions
  */
-function addInfoTooltip(adapter, element, returnHtml, functions = []) {
-    const tooltip = infoTooltip
+function addClickTooltip(adapter, element, returnHtml, functions = []) {
+    const tooltip = clickTooltip
 
     adapter.onEvent(element, "click", (event) => {
         const target = adapter.returnEventElement(event)
-
         lastTarget = target
         lastEventAdapter = adapter
-
-        nameTooltip.classList.replace("visible", "hidden")
+        inTooltip.classList.replace("visible", "hidden")
         coordsTooltip.classList.replace("visible", "hidden")
-
         tooltip.innerHTML = returnHtml(lastTarget)
-
         functions = functions instanceof Array ? functions : [functions]
-        functions.forEach(f => f())
-
+        functions.forEach(f => f(event))
         tooltip.classList.replace("hidden", "visible");
-
         if (!openTooltips.includes(tooltip)) {
             openTooltips.push(tooltip)
         }
-
         document.addEventListener('click', onClickOut)
     });
 }
@@ -253,21 +256,15 @@ function addCoordsTooltip(adapter, element, returnHtml, functions = []) {
     adapter.onEvent(element, "click", (event) => {
         if (tooltip.classList.contains("hidden")) {
             const target = adapter.returnEventElement(event)
-
             lastTarget = target
             lastEventAdapter = adapter
-
             tooltip.innerHTML = returnHtml(lastTarget)
-
             functions = functions instanceof Array ? functions : [functions]
-            functions.forEach(f => f())
-
+            functions.forEach(f => f(event))
             tooltip.classList.replace("hidden", "visible");
-
             if (!openTooltips.includes(tooltip)) {
                 openTooltips.push(tooltip)
             }
-
             document.addEventListener('click', onClickOut)
         }
     });
@@ -312,11 +309,12 @@ function hideTooltip(target) {
 
 const Tooltip = {
     setPosition: setPosition,
-    nameTooltip: nameTooltip,
-    infoTooltip: infoTooltip,
+    inTooltip: inTooltip,
+    clickTooltip: clickTooltip,
     coordsTooltip: coordsTooltip,
-    addNameTooltip: addNameTooltip,
-    addInfoTooltip: addInfoTooltip,
+    addInTooltip: addInTooltip,
+    addOutTooltip: addOutTooltip,
+    addClickTooltip: addClickTooltip,
     addCoordsTooltip: addCoordsTooltip
 }
 

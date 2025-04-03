@@ -64,15 +64,15 @@ export default class Map {
             maxZoom: 50,
             minZoom: 2,
             // styles: MAPSTYLES,
-            disableDefaultUI: true,
-            clickableIcons: false,
-            zoomControl: true,
             cameraControl: false,
+            clickableIcons: false,
+            disableDefaultUI: true,
+            fullscreenControl: true,
             mapTypeControl: false,
+            rotateControl: false,
             scaleControl: false,
             streetViewControl: true,
-            rotateControl: false,
-            fullscreenControl: true
+            zoomControl: true,
         });
 
         this.map.setCenter(MAPCENTER)
@@ -133,7 +133,7 @@ export default class Map {
             background: pinColor.background,
             borderColor: pinColor.border,
             glyphColor: pinColor.glyph,
-            scale: 1.3
+            scale: 1.3,
         });
 
         // @ts-ignore
@@ -142,11 +142,13 @@ export default class Map {
             position: element.getLatLng(),
             content: pin.element,
             title: `${elementType}: ${element.name}`,
-            zIndex: 100,
+            zIndex: 9999,
             draggable: false
         });
 
-        marker.element.addEventListener("mouseenter", () => {
+        marker.element.addEventListener("mouseenter", (/** @type {MouseEvent} */ event) => {
+            event.stopPropagation();
+
             marker.element.style.cursor = "pointer"
             pin.element.style.opacity = "0.9"
             pin.element.style.transform = "scale(1.2)";
@@ -155,17 +157,20 @@ export default class Map {
             pin.background = pinColor.hoverBackground;
             pin.borderColor = pinColor.hoverBorder;
             pin.glyphColor = pinColor.hoverGlyph;
-        });
 
-        marker.element.addEventListener("mouseleave", () => {
+        });
+        
+        marker.element.addEventListener("mouseleave", (/** @type {MouseEvent} */ event) => {
+            event.stopPropagation();
+
             marker.element.style.cursor = "auto"
             pin.element.style.opacity = "1"
             pin.element.style.transform = "scale(1)";
-
+            
             pin.background = pinColor.background;
             pin.borderColor = pinColor.border;
             pin.glyphColor = pinColor.glyph;
-
+            
             setTimeout(() => {
                 pin.element.style.transition = "none";
             }, 200)
