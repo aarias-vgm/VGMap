@@ -10,8 +10,6 @@ import HTML from "./html.js"
 /**
  * @typedef {import('./types.js').Color} Color
  * @typedef {import('./types.js').PinColor} PinColor
- * @typedef {import('./types.js').DistanceLine} DistanceLine
- * @typedef {import('./types.js').TooltipEvent} TooltipEvent
  */
 
 export default class MapManager {
@@ -80,57 +78,65 @@ export default class MapManager {
 
         if (marker.content instanceof HTMLElement) {
 
-            const markerElement = marker.content
+            const returnNameHTML = (/** @type {google.maps.Data.Feature} */ feature) =>{ 
+                const name = feature.getProperty("names")
 
-            const nameHTML = (/** @type {TooltipEvent} */ event) => `
+                return `
+                <div class="hospital" style="padding: 10px; border: 2px solid ${nameColors.border}; border-radius: 5px; background-color: ${nameColors.back}; color: ${nameColors.font};">
+                    <i class="fa ${faIcon}"></i>
+                    <span>${hospital.name}</span>
+                </div>
+            `}
+
+            const returnNameHTML = (/** @type {HTMLElement} */ element) => `
                 <div class="hospital" style="padding: 10px; border: 2px solid ${nameColors.border}; border-radius: 5px; background-color: ${nameColors.back}; color: ${nameColors.font};">
                     <i class="fa ${faIcon}"></i>
                     <span>${hospital.name}</span>
                 </div>
             `
 
-            let index = Utils.getRandomNumber(tagColors.length);
+            const returnInfoHTML = (/** @type {HTMLElement} */ element) => {
+                let index = Utils.getRandomNumber(tagColors.length);
 
-            const infoHTML = (/** @type {TooltipEvent} */ event) => `
-                <div class="hospital" style="padding: 10px; border: 2px solid ${infoColors.border}; border-radius: 5px; background-color: ${infoColors.back}; color: ${infoColors.font};">
-                    <div style="display: flex; flex-direction: row; justify-content: left; align-items: start;">
-                        <div class="left" style="max-width: 125px; height: min-content;">
-                            <h5 style="margin-bottom: 4px;">
-                                <span style="display: inline-flex; white-space: nowrap;">
-                                    <i class="fa ${faIcon}" style="margin-right: 3px;"></i>
-                                    <span>${hospital.name.split(" ")[0]}</span>
-                                </span>
-                                <span>${hospital.name.split(" ").slice(1).join(" ")}</span>
-                            </h5>
-                            <em style="font-size: 0.75rem;">
-                                <span>${hospital.municipality?.name}</span>
-                                <span>(${hospital.municipality?.department?.name})</span>
-                                ${hospital.locality ? '<span>' + hospital.locality.name + '</span>' : ''}
-                                <span class="coords-icon" style="position: relative; margin-left: 2px; color: ${infoColors.font};">
-                                    <i class="fa fa-location-dot"></i>
-                                </span>
-                            </em>
-                            <hr style="margin: 4px 0px 4px 0px; border-top: 1px solid ${infoColors.font};"/>
-                            <small class="nowrap">
-                                <b>ID:</b>
-                                <span>${hospital.id}</span>
-                                <br>
-                                <b>Complejidad:</b>
-                                <span>${hospital.complexity}</span>
-                            </small>
-                        </div>
-                        <div class="right vertical-slider" style="width: min-content; margin-left: 10px; padding-right: 5px; flex-shrink: 0;">
-                            <small>
-                                ${hospital.services.split(",").map(service => { index++; return this.createTagHTML(service.trim(), tagColors[index % tagColors.length]) }).join("")}                               
-                            </small>    
+                return `
+                    <div class="hospital" style="padding: 10px; border: 2px solid ${infoColors.border}; border-radius: 5px; background-color: ${infoColors.back}; color: ${infoColors.font};">
+                        <div style="display: flex; flex-direction: row; justify-content: left; align-items: start;">
+                            <div class="left" style="max-width: 125px; height: min-content;">
+                                <h5 style="margin-bottom: 4px;">
+                                    <span style="display: inline-flex; white-space: nowrap;">
+                                        <i class="fa ${faIcon}" style="margin-right: 3px;"></i>
+                                        <span>${hospital.name.split(" ")[0]}</span>
+                                    </span>
+                                    <span>${hospital.name.split(" ").slice(1).join(" ")}</span>
+                                </h5>
+                                <em style="font-size: 0.75rem;">
+                                    <span>${hospital.municipality?.name}</span>
+                                    <span>(${hospital.municipality?.department?.name})</span>
+                                    ${hospital.locality ? '<span>' + hospital.locality.name + '</span>' : ''}
+                                    <span class="coords-icon" style="position: relative; margin-left: 2px; color: ${infoColors.font};">
+                                        <i class="fa fa-location-dot"></i>
+                                    </span>
+                                </em>
+                                <hr style="margin: 4px 0px 4px 0px; border-top: 1px solid ${infoColors.font};"/>
+                                <small class="nowrap">
+                                    <b>ID:</b>
+                                    <span>${hospital.id}</span>
+                                    <br>
+                                    <b>Complejidad:</b>
+                                    <span>${hospital.complexity}</span>
+                                </small>
+                            </div>
+                            <div class="right vertical-slider" style="width: min-content; margin-left: 10px; padding-right: 5px; flex-shrink: 0;">
+                                <small>
+                                    ${hospital.services.split(",").map(service => { index++; return this.createTagHTML(service.trim(), tagColors[index % tagColors.length]) }).join("")}                               
+                                </small>    
+                            </div>
                         </div>
                     </div>
-                </div>
-            `
+                `
+            }
 
-            const coords = `${hospital.lat}, ${hospital.lng}`
-
-            const coordsHTML = (/** @type {TooltipEvent} */ event) => `
+            const returnCoordsHTML = (/** @type {HTMLElement} */ element) => `
                 <button class="hospital" style="padding: 5px 10px; border: 2px solid ${coordsColors.border}; border-radius: 5px; background-color: ${coordsColors.back}; color: ${coordsColors.font}">
                     <code style="text-align: left;">
                         <small>
@@ -146,7 +152,7 @@ export default class MapManager {
                     </code>
                 </button>
             `
-            const htmlTooltipEventAdapter = new HTMLTooltipEventAdapter()
+            const eventAdapter = new HTMLTooltipEventAdapter()
 
             const setVerticalSliderHeight = () => {
                 const left = Tooltip.infoTooltip.querySelector(".left")
@@ -163,14 +169,16 @@ export default class MapManager {
                 if (coordsElement instanceof HTMLElement) {
                     const setCopyFunction = () => {
                         const button = Tooltip.coordsTooltip.getElementsByTagName("button")[0]
-                        button.onclick = () => Button.copyText(button, coords)
+                        button.onclick = () => Button.copyText(button, `${hospital.lat}, ${hospital.lng}`)
                     }
-                    Tooltip.addCoordsTooltip(htmlTooltipEventAdapter, coordsElement, coordsHTML, [setCopyFunction, () => { const rect = HTML.getRect(coordsElement); Tooltip.setPosition(Tooltip.coordsTooltip, rect.x, rect.y) }])
+                    Tooltip.addCoordsTooltip(eventAdapter, coordsElement, returnCoordsHTML, [setCopyFunction, () => { const rect = HTML.getRect(coordsElement); Tooltip.setPosition(Tooltip.coordsTooltip, rect.x, rect.y) }])
                 }
             }
 
-            Tooltip.addNameTooltip(htmlTooltipEventAdapter, markerElement, nameHTML, () => { const rect = HTML.getRect(markerElement); Tooltip.setPosition(Tooltip.nameTooltip, rect.x + rect.w / 2, rect.y - rect.h) })
-            Tooltip.addInfoTooltip(htmlTooltipEventAdapter, markerElement, infoHTML, [() => Style.setSelectionColors(selectionColors), () => Style.setScrollbarColors(scrollColors), setVerticalSliderHeight, addCoordsTooltip, () => { const rect = HTML.getRect(markerElement); Tooltip.setPosition(Tooltip.infoTooltip, rect.x + rect.w / 2, rect.y - rect.h) }])
+            const element = marker.content
+
+            Tooltip.addNameTooltip(eventAdapter, marker.content, returnNameHTML, () => { const rect = HTML.getRect(element); Tooltip.setPosition(Tooltip.nameTooltip, rect.x + rect.w / 2, rect.y - rect.h) })
+            Tooltip.addInfoTooltip(eventAdapter, marker.content, returnInfoHTML, [() => Style.setSelectionColors(selectionColors), () => Style.setScrollbarColors(scrollColors), setVerticalSliderHeight, addCoordsTooltip, () => { const rect = HTML.getRect(element); Tooltip.setPosition(Tooltip.infoTooltip, rect.x + rect.w / 2, rect.y - rect.h) }])
         }
     }
 
@@ -201,15 +209,13 @@ export default class MapManager {
 
         if (marker.content instanceof HTMLElement) {
 
-            const markerElement = marker.content
-
-            const nameHTML = (/** @type {TooltipEvent} */ event) => `
+            const returnNameHTML = (/** @type {HTMLElement} */ element) => `
             <div class="seller" style="max-width: 300px; padding: 10px; border: 2px solid ${nameColors.border}; border-radius: 5px; background-color: ${nameColors.back}; color: ${nameColors.font};">
                 <i class="fa ${faIcon}"></i> <span>${seller.name}</span>
             </div>
             `
 
-            const infoHTML = (/** @type {TooltipEvent} */ event) => `
+            const returnInfoHTML = (/** @type {HTMLElement} */ element) => `
                 <div class="seller" style="min-width: 150px; max-width: 300px; padding: 10px; border: 2px solid ${infoColors.border}; border-radius: 5px; background-color: ${infoColors.back}; color: ${infoColors.font};">
                     <div style="display: flex; flex-direction: row; justify-content: left; align-items: center;">
                         <div>
@@ -234,9 +240,7 @@ export default class MapManager {
                 </div>
             `
 
-            const coords = `${seller.lat}, ${seller.lng}`
-
-            const coordsHTML = (/** @type {TooltipEvent} */ event) => `
+            const returnCoordsHtml = (/** @type {HTMLElement} */ element) => `
                 <button class="seller" style="padding: 5px 10px; border: 2px solid ${coordsColors.border}; border-radius: 5px; background-color: ${coordsColors.back}; color: ${coordsColors.font}">
                     <code style="text-align: left;">
                         <small>
@@ -253,21 +257,23 @@ export default class MapManager {
                 </button>
             `
 
-            const htmlTooltipEventAdapter = new HTMLTooltipEventAdapter()
+            const eventAdapter = new HTMLTooltipEventAdapter()
 
             const addCoordsTooltip = () => {
                 const coordsElement = Tooltip.infoTooltip.querySelector(".coords-icon")
                 if (coordsElement instanceof HTMLElement) {
                     const setCopyFunction = () => {
                         const button = Tooltip.coordsTooltip.getElementsByTagName("button")[0]
-                        button.onclick = () => Button.copyText(button, coords)
+                        button.onclick = () => Button.copyText(button, `${seller.lat}, ${seller.lng}`)
                     }
-                    Tooltip.addCoordsTooltip(htmlTooltipEventAdapter, coordsElement, coordsHTML, [setCopyFunction, () => { const rect = HTML.getRect(coordsElement); Tooltip.setPosition(Tooltip.coordsTooltip, rect.x + rect.w, rect.y + rect.h) }])
+                    Tooltip.addCoordsTooltip(eventAdapter, coordsElement, returnCoordsHtml, [setCopyFunction, () => { const rect = HTML.getRect(coordsElement); Tooltip.setPosition(Tooltip.coordsTooltip, rect.x + rect.w, rect.y + rect.h) }])
                 }
             }
 
-            Tooltip.addNameTooltip(htmlTooltipEventAdapter, markerElement, nameHTML, () => { const rect = HTML.getRect(markerElement); Tooltip.setPosition(Tooltip.nameTooltip, rect.x + rect.w / 2, rect.y - rect.h) })
-            Tooltip.addInfoTooltip(htmlTooltipEventAdapter, markerElement, infoHTML, [() => Style.setSelectionColors(selectionColors), addCoordsTooltip, () => { const rect = HTML.getRect(markerElement); Tooltip.setPosition(Tooltip.infoTooltip, rect.x + rect.w / 2, rect.y - rect.h) }])
+            const element = marker.content
+
+            Tooltip.addNameTooltip(eventAdapter, marker.content, returnNameHTML, () => { const rect = HTML.getRect(element); Tooltip.setPosition(Tooltip.nameTooltip, rect.x + rect.w / 2, rect.y - rect.h) })
+            Tooltip.addInfoTooltip(eventAdapter, marker.content, returnInfoHTML, [() => Style.setSelectionColors(selectionColors), addCoordsTooltip, () => { const rect = HTML.getRect(element); Tooltip.setPosition(Tooltip.infoTooltip, rect.x + rect.w / 2, rect.y - rect.h) }])
         }
     }
 

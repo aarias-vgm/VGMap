@@ -1,5 +1,4 @@
 /**
- * @typedef {import('./types.js').TooltipEvent} TooltipEvent
  * @typedef {import('./types.js').TooltipHandler} TooltipHandler
  * @typedef {import('./types.js').TooltipEventType} TooltipEventType
  */
@@ -18,6 +17,10 @@ const coordsTooltip = document.getElementById("coords-tooltip")
 let openTooltips = []
 /** @type {EventTarget?} */
 let lastTarget = null
+/** @type {TooltipEventAdapter} */
+// @ts-ignore
+let lastEventAdapter = null
+
 
 /**
  * 
@@ -51,60 +54,22 @@ function setPosition(tooltip, x, y) {
     tooltip.style.top = `${y}px`;
 }
 
-/**
- * 
- * @param {TooltipEvent} event 
- */
-function onClickOut(event) {
-    hideTooltip(event)
-}
-
-/**
-* 
-* @param {TooltipEvent} event 
-*/
-function hideTooltip(event) {
-    const target = event instanceof MouseEvent ? event.target : event.domEvent.target
-
-    if (target instanceof Node && target != lastTarget) {
-
-        let targetIndex = openTooltips.findIndex((descendant) => descendant.contains(target)); // target index == -1: target is not a descendant
-
-        if (targetIndex != -1) {
-            for (let i = openTooltips.length - 1; targetIndex < i; i--) {
-                openTooltips[i].classList.replace("visible", "hidden");
-                openTooltips.splice(i, 1)
-            }
-        }
-        else {
-            for (const openTooltip of openTooltips) {
-                openTooltip.classList.replace("visible", "hidden");
-            }
-            openTooltips = []
-        }
-    }
-
-    if (!openTooltips) {
-        document.removeEventListener('click', onClickOut);
-    }
-}
-
 class TooltipEventAdapter {
 
     constructor() {
         if (new.target === TooltipEventAdapter) {
-            throw new Error("No se puede instanciar esta clase abstracta.");
+            throw new Error("An abstract class cannot be instantiated.");
         }
     }
 
     /**
      * 
-     * @param {HTMLElement | google.maps.Data} element 
+     * @param {any} element 
      * @param {TooltipEventType} eventType 
      * @param {TooltipHandler} handler
      */
     onEvent(element, eventType, handler) {
-        throw new Error("El método onEvent no ha sido reescrito.");
+        throw new Error("onEvent method not overwritten yet.");
     }
 
     /**
@@ -112,7 +77,15 @@ class TooltipEventAdapter {
      * @return {string}
      */
     returnEventName(eventType) {
-        throw new Error("El método returnEventName no ha sido reescrito.");
+        throw new Error("returnEventName method not overwritten yet.");
+    }
+
+    /**
+     * @param {any} event
+     * @return {any}
+    */
+    returnEventElement(event) {
+        throw new Error("returnEventElement method not overwritten yet.");
     }
 }
 
@@ -149,6 +122,15 @@ export class HTMLTooltipEventAdapter extends TooltipEventAdapter {
                 return "mousemove"
 
         }
+    }
+
+    /**
+     * 
+     * @param {MouseEvent} event 
+     * @return {HTMLElement?} 
+     */
+    returnEventElement(event) {
+        return event.target instanceof HTMLElement ? event.target : null
     }
 }
 
@@ -187,20 +169,32 @@ export class MapTooltipEventAdapter extends TooltipEventAdapter {
                 return "mousemove"
         }
     }
+
+    /**
+     * 
+     * @param {google.maps.Data.MouseEvent} event 
+     * @return {google.maps.Data.Feature?} 
+     */
+    returnEventElement(event) {
+        return event.feature instanceof HTMLElement ? event.feature : null
+    }
 }
 
 /**
  * 
  * @param {TooltipEventAdapter} adapter
- * @param {HTMLElement | google.maps.Data} element
- * @param {function((TooltipEvent)): string} setHtml
+ * @param {any} element
+ * @param {function((any)): string} returnHtml
  * @param {function | function[]} functions
  */
-function addNameTooltip(adapter, element, setHtml, functions = []) {
+function addNameTooltip(adapter, element, returnHtml, functions = []) {
     const tooltip = nameTooltip;
+
     adapter.onEvent(element, "in", (event) => {
+        const target = adapter.returnEventElement(event)
+
         if (!infoTooltip.classList.contains("visible")) {
-            tooltip.innerHTML = setHtml(event);
+            tooltip.innerHTML = returnHtml(target);
             functions = functions instanceof Array ? functions : [functions]
             functions.forEach(f => f());
             tooltip.classList.replace("hidden", "visible");
@@ -215,49 +209,105 @@ function addNameTooltip(adapter, element, setHtml, functions = []) {
 /**
  * 
  * @param {TooltipEventAdapter} adapter
- * @param {HTMLElement | google.maps.Data} element
- * @param {function((TooltipEvent)): string} setHtml
+ * @param {any} element
+ * @param {function((any)): string} returnHtml
  * @param {function | function[]} functions
  */
-function addInfoTooltip(adapter, element, setHtml, functions = []) {
+function addInfoTooltip(adapter, element, returnHtml, functions = []) {
     const tooltip = infoTooltip
+
     adapter.onEvent(element, "click", (event) => {
-        nameTooltip?.classList.replace("visible", "hidden")
-        coordsTooltip?.classList.replace("visible", "hidden")
-        tooltip.innerHTML = setHtml(event)
+        const target = adapter.returnEventElement(event)
+
+        lastTarget = target
+        lastEventAdapter = adapter
+
+        nameTooltip.classList.replace("visible", "hidden")
+        coordsTooltip.classList.replace("visible", "hidden")
+
+        tooltip.innerHTML = returnHtml(lastTarget)
+
         functions = functions instanceof Array ? functions : [functions]
         functions.forEach(f => f())
+
         tooltip.classList.replace("hidden", "visible");
-        lastTarget = event instanceof MouseEvent ? event.target : event.domEvent.target
+
         if (!openTooltips.includes(tooltip)) {
             openTooltips.push(tooltip)
         }
-        document.addEventListener('click', onClickOut);
+
+        document.addEventListener('click', onClickOut)
     });
 }
 
 /**
  * 
  * @param {TooltipEventAdapter} adapter
- * @param {HTMLElement | google.maps.Data} element
- * @param {function((TooltipEvent)): string} setHtml
+ * @param {any} element
+ * @param {function((any)): string} returnHtml
  * @param {function | function[]} functions
  */
-function addCoordsTooltip(adapter, element, setHtml, functions = []) {
+function addCoordsTooltip(adapter, element, returnHtml, functions = []) {
     const tooltip = coordsTooltip
+
     adapter.onEvent(element, "click", (event) => {
         if (tooltip.classList.contains("hidden")) {
-            tooltip.innerHTML = setHtml(event)
+            const target = adapter.returnEventElement(event)
+
+            lastTarget = target
+            lastEventAdapter = adapter
+
+            tooltip.innerHTML = returnHtml(lastTarget)
+
             functions = functions instanceof Array ? functions : [functions]
             functions.forEach(f => f())
+
             tooltip.classList.replace("hidden", "visible");
-            lastTarget = event instanceof MouseEvent ? event.target : event.domEvent.target
+
             if (!openTooltips.includes(tooltip)) {
                 openTooltips.push(tooltip)
             }
-            document.addEventListener('click', onClickOut);
+
+            document.addEventListener('click', onClickOut)
         }
     });
+}
+
+/**
+ * 
+ * @param {any} event 
+ */
+function onClickOut(event) {
+    hideTooltip(lastEventAdapter.returnEventElement(event))
+}
+
+/**
+* 
+* @param {any} target 
+*/
+function hideTooltip(target) {
+
+    if (target instanceof Node && target != lastTarget) {
+
+        let targetIndex = openTooltips.findIndex((descendant) => descendant.contains(target)); // target index == -1: target is not a descendant
+
+        if (targetIndex != -1) {
+            for (let i = openTooltips.length - 1; targetIndex < i; i--) {
+                openTooltips[i].classList.replace("visible", "hidden");
+                openTooltips.splice(i, 1)
+            }
+        }
+        else {
+            for (const openTooltip of openTooltips) {
+                openTooltip.classList.replace("visible", "hidden");
+            }
+            openTooltips = []
+        }
+    }
+
+    if (!openTooltips) {
+        document.removeEventListener('click', onClickOut);
+    }
 }
 
 const Tooltip = {

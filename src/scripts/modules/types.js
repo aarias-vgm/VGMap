@@ -11,18 +11,14 @@
 // Map
 
 /**
- * @typedef {{ [signature: string]: string | google.maps.TravelMode | { text: string, value: number }, travelMode: google.maps.TravelMode, distance: { text: string, value: number }, duration: { text: string, value: number } }} DistanceLine
+ * @typedef {{ [signature: string]: string | google.maps.TravelMode | { text: string, value: number }, travelMode: google.maps.TravelMode, distance: { text: string, value: number }, duration: { text: string, value: number } }} DistanceResult
 
-// HTML
-
-/**
- * @typedef {MouseEvent | google.maps.Data.MouseEvent} TooltipEvent
- */
+// Tooltip
 
 /**
  * @callback TooltipHandler
- * @param {TooltipEvent} event
- * @returns {void}
+ * @param {any} event
+ * @returns {any}
  */
 
 /**

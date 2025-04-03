@@ -141,8 +141,12 @@ small {
 
 .tooltip,
 .tooltip * {
+    user-select: text;
+    pointer-events: auto;
+}
+
+#coords-tooltip {
     user-select: none;
-    pointer-events: none;
 }
 
 #name-tooltip {
@@ -163,22 +167,6 @@ small {
 #info-tooltip {
     line-height: 1.1;
     text-align: left;
-}
-
-#info-tooltip b,
-#info-tooltip p,
-#info-tooltip em,
-#info-tooltip h1,
-#info-tooltip h2,
-#info-tooltip h3,
-#info-tooltip h4,
-#info-tooltip h5,
-#info-tooltip h6,
-#info-tooltip span,
-#info-tooltip small,
-#info-tooltip .vertical-slider {
-    user-select: text;
-    pointer-events: auto;
 }
 
 #coords-tooltip {

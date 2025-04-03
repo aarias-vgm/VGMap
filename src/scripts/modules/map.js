@@ -111,33 +111,6 @@ export default class Map {
 
     /**
      * 
-     * @param {string} html 
-     */
-    addAreaTooltip(html) {
-        const tooltip = this.areaTooltip
-
-        this.map.data.addListener("mouseover", (/** @type {DataMouseEvent} */ event) => {
-            const feature = event.feature
-
-            const name = feature.getProperty('name')
-            //  feature.forEachProperty((property) => {
-            //     const value = feature.getProperty('name');
-            //     propertiesHTML += `<b>${property}:</b> ${value}<br>`;
-            //  });
-            tooltip.innerHTML = `<b>${name}<br>`;;
-            tooltip.style.position = 'absolute';
-            tooltip.style.display = 'block';
-            tooltip.style.left = event.domEvent.clientX + 'px';
-            tooltip.style.top = event.domEvent.clientY + 'px';
-        });
-
-        this.map.data.addListener("mouseout", (/** @type {DataMouseEvent} */ event) => {
-            tooltip.style.display = 'none';
-        });
-    }
-
-    /**
-     * 
      * @param {Place} element 
      * @param {string} elementType 
      * @param {string} faIcon 
