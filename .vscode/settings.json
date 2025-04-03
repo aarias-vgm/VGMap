@@ -201,5 +201,6 @@
     "liveServer.settings.ignoreFiles": [
         "**/*"
     ],
-    "livePreview.autoRefreshPreview": "Never"
+    "livePreview.autoRefreshPreview": "Never",
+    "liveServer.settings.useLocalIp": true
 }

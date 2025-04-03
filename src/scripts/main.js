@@ -29,13 +29,15 @@ async function run() {
 
     await mapManager.map.importPinElement()
     await mapManager.map.importAdvancedMarkerElement()
+
     // await mapManager.map.importDistanceService()
     // await mapManager.map.importGeocoderService()
 
+    // await mapManager.calculatePlacesDistances(departmentsDict, departmentsDict, google.maps.TravelMode.DRIVING, true)
     //await mapManager.calculatePlacesDistances(hospitalsDict, sellersDict, google.maps.TravelMode.DRIVING, true)
     // await mapManager.calculatePlacesDistances(hospitalsDict, areasDict, google.maps.TravelMode.DRIVING, true)
 
-    await assignHospitalsToSellers(hospitalsDict, sellersDict)
+    // await assignHospitalsToSellers(hospitalsDict, sellersDict)
 
     // let sum = 0
     // for (const seller of Object.values(sellersDict)) {
@@ -107,30 +109,62 @@ async function run() {
         await mapManager.createSellerMarker(sellers[i])
         sellerColors[sellers[i].id] = availableColors[i % availableColors.length - 1]
     }
+    
+    return
 
-    for (const [departmentId, department] of Object.entries(departmentsDict)) {
-        await mapManager.addGeoJSON(`geojson/departments/${departmentId}.geojson`)
+    for (const [areaId, area] of Object.entries(areasDict)) {
+        if (area instanceof Municipality) {
+            if (!area.localities.length) {
+                await mapManager.addGeoJSON(`geojson/municipalities/${areaId}.geojson`)
+            }
+        } else {
+            await mapManager.addGeoJSON(`geojson/localities/${areaId}.geojson`)
+        }
     }
 
-    mapManager.map.map.data.forEach((feature) => {
-        console.log("holis");
-        console.log(feature.getProperty('name'));
-    });
 
-    // let index = -1
-    // mapManager.map.map.data.setStyle((feature) => {
+    mapManager.map.map.data.setStyle((feature) => {
 
-    //     index += 1
-    //     const fillColor = Object.values(sellerColors)[index]
+        let areaId = ""
+        
+        try{
+            areaId = feature.getId()
+        } catch(error){
+            console.error(areaId)
+        }
 
-    //     return {
-    //                 fillColor: fillColor,
-    //                 fillOpacity: 1,
-    //                 strokeColor: "white",
-    //                 strokeWeight: 2,
-    //                 strokeOpacity: 1
-    //             };
-    // })
+        let fillColor = "#000000"
+
+        // @ts-ignore
+        if (areaId) {
+            const area = areasDict[areaId]
+            if (area) {
+                let departmentId
+                if (area instanceof Municipality) {
+                    departmentId = area.department.id
+                } else if (area instanceof Locality) {
+                    departmentId = area.municipality.department.id
+                }
+
+                // @ts-ignore
+                if (excludedDepartments.includes(departmentId)) {
+                    fillColor = "#ff0000"
+                } else {
+                    fillColor = sellerColors[area.seller?.id]
+                }
+            }
+        } else {
+            console.log(feature)
+        }
+
+        return {
+            fillColor: fillColor,
+            fillOpacity: 1,
+            strokeColor: "white",
+            strokeWeight: 2,
+            strokeOpacity: 1
+        };
+    })
 
     // mapManager.map.map.data.setStyle((feature) => {
     //     const municipalityId = String(feature.getProperty("id"))
@@ -494,16 +528,11 @@ async function assignHospitalsToSellers(hospitalsDict, sellersDict) {
                         }
 
                         if (minDistance <= 14400) {
-                            hospital.seller = sellersDict[minDistanceSellerId]
-                            hospital.seller.hospitals.push(hospitalsDict[currentPlace1Id])
+                            const currentHospital = hospitalsDict[currentPlace1Id]
+                            const currentSeller = sellersDict[minDistanceSellerId]
 
-                            // const localities = hospital.municipality.localities
-
-                            // if (localities.length) {
-                            //     seller.areas.push(...localities)
-                            // } else {
-                            //     seller.areas.push(hospital.municipality)
-                            // }
+                            currentHospital.seller = currentSeller
+                            currentSeller.hospitals.push(currentHospital)
                         }
 
                         currentPlace1Id = hospital.id

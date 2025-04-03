@@ -11,6 +11,7 @@ import HTML from "./html.js"
  * @typedef {import('./types.js').Color} Color
  * @typedef {import('./types.js').PinColor} PinColor
  * @typedef {import('./types.js').DistanceLine} DistanceLine
+ * @typedef {import('./types.js').TooltipEvent} TooltipEvent
  */
 
 export default class MapManager {
@@ -42,9 +43,9 @@ export default class MapManager {
     }
 
     /**
-         * 
-         * @param {Hospital} hospital 
-         */
+     * 
+     * @param {Hospital} hospital 
+     */
     async createHospitalMarker(hospital) {
 
         /** @type {PinColor} */
@@ -81,7 +82,7 @@ export default class MapManager {
 
             const markerElement = marker.content
 
-            const nameHTML = `
+            const nameHTML = (/** @type {TooltipEvent} */ event) => `
                 <div class="hospital" style="padding: 10px; border: 2px solid ${nameColors.border}; border-radius: 5px; background-color: ${nameColors.back}; color: ${nameColors.font};">
                     <i class="fa ${faIcon}"></i>
                     <span>${hospital.name}</span>
@@ -90,7 +91,7 @@ export default class MapManager {
 
             let index = Utils.getRandomNumber(tagColors.length);
 
-            const infoHTML = `
+            const infoHTML = (/** @type {TooltipEvent} */ event) => `
                 <div class="hospital" style="padding: 10px; border: 2px solid ${infoColors.border}; border-radius: 5px; background-color: ${infoColors.back}; color: ${infoColors.font};">
                     <div style="display: flex; flex-direction: row; justify-content: left; align-items: start;">
                         <div class="left" style="max-width: 125px; height: min-content;">
@@ -129,7 +130,7 @@ export default class MapManager {
 
             const coords = `${hospital.lat}, ${hospital.lng}`
 
-            const coordsHTML = `
+            const coordsHTML = (/** @type {TooltipEvent} */ event) => `
                 <button class="hospital" style="padding: 5px 10px; border: 2px solid ${coordsColors.border}; border-radius: 5px; background-color: ${coordsColors.back}; color: ${coordsColors.font}">
                     <code style="text-align: left;">
                         <small>
@@ -202,13 +203,13 @@ export default class MapManager {
 
             const markerElement = marker.content
 
-            const nameHTML = `
+            const nameHTML = (/** @type {TooltipEvent} */ event) => `
             <div class="seller" style="max-width: 300px; padding: 10px; border: 2px solid ${nameColors.border}; border-radius: 5px; background-color: ${nameColors.back}; color: ${nameColors.font};">
                 <i class="fa ${faIcon}"></i> <span>${seller.name}</span>
             </div>
             `
 
-            const infoHTML = `
+            const infoHTML = (/** @type {TooltipEvent} */ event) => `
                 <div class="seller" style="min-width: 150px; max-width: 300px; padding: 10px; border: 2px solid ${infoColors.border}; border-radius: 5px; background-color: ${infoColors.back}; color: ${infoColors.font};">
                     <div style="display: flex; flex-direction: row; justify-content: left; align-items: center;">
                         <div>
@@ -235,7 +236,7 @@ export default class MapManager {
 
             const coords = `${seller.lat}, ${seller.lng}`
 
-            const coordsHTML = `
+            const coordsHTML = (/** @type {TooltipEvent} */ event) => `
                 <button class="seller" style="padding: 5px 10px; border: 2px solid ${coordsColors.border}; border-radius: 5px; background-color: ${coordsColors.back}; color: ${coordsColors.font}">
                     <code style="text-align: left;">
                         <small>
@@ -269,7 +270,7 @@ export default class MapManager {
             Tooltip.addInfoTooltip(htmlTooltipEventAdapter, markerElement, infoHTML, [() => Style.setSelectionColors(selectionColors), addCoordsTooltip, () => { const rect = HTML.getRect(markerElement); Tooltip.setPosition(Tooltip.infoTooltip, rect.x + rect.w / 2, rect.y - rect.h) }])
         }
     }
-  
+
 
     /**
      * Calcula distancias para cada par (place1, place2) evitando duplicados
@@ -282,10 +283,13 @@ export default class MapManager {
      * @param {Boolean} test
      */
     async calculatePlacesDistances(places1Dict, places2Dict, travelMode = google.maps.TravelMode.DRIVING, className = false, test = false) {
-        const key1 = className ? Object.values(places1Dict).length > 0 ? Object.values(places1Dict)[0].constructor.name.toLowerCase() : "place1" : "place1";
-        const key2 = className ? Object.values(places2Dict).length > 0 ? Object.values(places2Dict)[0].constructor.name.toLowerCase() : "place2" : "place2";
+        let key1 = className ? Object.values(places1Dict).length > 0 ? Object.values(places1Dict)[0].constructor.name.toLowerCase() : "place1" : "place1";
+        let key2 = className ? Object.values(places2Dict).length > 0 ? Object.values(places2Dict)[0].constructor.name.toLowerCase() : "place2" : "place2";
 
         const fileName = `distances${travelMode.charAt(0) + travelMode.slice(1).toLowerCase()}${key1.charAt(0).toUpperCase() + key1.slice(1)}To${key2.charAt(0).toUpperCase() + key2.slice(1)}`;
+
+        key1 = key1 + "1"
+        key2 = key2 + "2"
 
         const a = document.createElement("a");
 
@@ -297,8 +301,6 @@ export default class MapManager {
             placeIds2 = placeIds2.slice(0, 2);
         }
 
-        let lines = [];
-
         const isSameDict = places1Dict === places2Dict;
 
         let maxCount
@@ -306,13 +308,14 @@ export default class MapManager {
         let getIndex
 
         if (isSameDict) {
-            maxCount = (placeIds1.length * (placeIds2.length - 1)) / 2; // número de pares sin repetición
+            maxCount = Math.round((placeIds1.length * (placeIds2.length - 1)) / 2); // número de pares sin repetición
             getIndex = (i) => i + 1 // combination
         } else {
             maxCount = placeIds1.length * placeIds2.length;
             getIndex = (i) => 0 // permutation
         }
 
+        let lines = [];
         let counter = 0;
 
         for (let i = 0; i < placeIds1.length; i++) {
@@ -320,18 +323,20 @@ export default class MapManager {
             const place1 = places1Dict[place1Id];
 
             for (let j = getIndex(i); j < placeIds2.length; j++) {
+                counter++;
+
                 const place2Id = placeIds2[j];
                 const place2 = places2Dict[place2Id];
 
-                counter++;
-                console.log(`${place1Id} -> ${place2Id} | ${counter} of ${maxCount} [${Math.round((counter * 100) / maxCount)}%]`);
+                console.log(`${place1Id} -> ${place2Id} | ${counter} of ${maxCount} [${(counter / (maxCount / 100)).toFixed(2)}%]`);
+
                 const distance = await this.map.calculateDistance(place1, place2, travelMode);
                 if (distance) {
                     const object = { [key1]: place1Id, [key2]: place2Id, travelMode: travelMode, ...distance, };
                     lines.push(object);
                 }
 
-                if (lines.length === 1000) {
+                if (lines.length > 999) {
                     Files.saveNDJSON(lines, fileName, a);
                     lines = [];
                 }

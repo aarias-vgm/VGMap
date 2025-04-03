@@ -1,4 +1,5 @@
 /**
+ * @typedef {import('./types.js').TooltipEvent} TooltipEvent
  * @typedef {import('./types.js').TooltipHandler} TooltipHandler
  * @typedef {import('./types.js').TooltipEventType} TooltipEventType
  */
@@ -52,7 +53,7 @@ function setPosition(tooltip, x, y) {
 
 /**
  * 
- * @param {MouseEvent | google.maps.Data.MouseEvent} event 
+ * @param {TooltipEvent} event 
  */
 function onClickOut(event) {
     hideTooltip(event)
@@ -60,7 +61,7 @@ function onClickOut(event) {
 
 /**
 * 
-* @param {MouseEvent | google.maps.Data.MouseEvent} event 
+* @param {TooltipEvent} event 
 */
 function hideTooltip(event) {
     const target = event instanceof MouseEvent ? event.target : event.domEvent.target
@@ -192,14 +193,14 @@ export class MapTooltipEventAdapter extends TooltipEventAdapter {
  * 
  * @param {TooltipEventAdapter} adapter
  * @param {HTMLElement | google.maps.Data} element
- * @param {string} html
+ * @param {function((TooltipEvent)): string} setHtml
  * @param {function | function[]} functions
  */
-function addNameTooltip(adapter, element, html, functions = []) {
+function addNameTooltip(adapter, element, setHtml, functions = []) {
     const tooltip = nameTooltip;
     adapter.onEvent(element, "in", (event) => {
         if (!infoTooltip.classList.contains("visible")) {
-            tooltip.innerHTML = html;
+            tooltip.innerHTML = setHtml(event);
             functions = functions instanceof Array ? functions : [functions]
             functions.forEach(f => f());
             tooltip.classList.replace("hidden", "visible");
@@ -215,15 +216,15 @@ function addNameTooltip(adapter, element, html, functions = []) {
  * 
  * @param {TooltipEventAdapter} adapter
  * @param {HTMLElement | google.maps.Data} element
- * @param {string} html
+ * @param {function((TooltipEvent)): string} setHtml
  * @param {function | function[]} functions
  */
-function addInfoTooltip(adapter, element, html, functions = []) {
+function addInfoTooltip(adapter, element, setHtml, functions = []) {
     const tooltip = infoTooltip
     adapter.onEvent(element, "click", (event) => {
         nameTooltip?.classList.replace("visible", "hidden")
         coordsTooltip?.classList.replace("visible", "hidden")
-        tooltip.innerHTML = html
+        tooltip.innerHTML = setHtml(event)
         functions = functions instanceof Array ? functions : [functions]
         functions.forEach(f => f())
         tooltip.classList.replace("hidden", "visible");
@@ -239,14 +240,14 @@ function addInfoTooltip(adapter, element, html, functions = []) {
  * 
  * @param {TooltipEventAdapter} adapter
  * @param {HTMLElement | google.maps.Data} element
- * @param {string} html
+ * @param {function((TooltipEvent)): string} setHtml
  * @param {function | function[]} functions
  */
-function addCoordsTooltip(adapter, element, html, functions = []) {
+function addCoordsTooltip(adapter, element, setHtml, functions = []) {
     const tooltip = coordsTooltip
     adapter.onEvent(element, "click", (event) => {
         if (tooltip.classList.contains("hidden")) {
-            tooltip.innerHTML = html
+            tooltip.innerHTML = setHtml(event)
             functions = functions instanceof Array ? functions : [functions]
             functions.forEach(f => f())
             tooltip.classList.replace("hidden", "visible");

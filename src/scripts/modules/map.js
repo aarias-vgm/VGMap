@@ -1,5 +1,5 @@
 import { MAPCENTER, MAPID, DIANKEY } from './constants.js';
-import { Place } from './classes.js';
+import { Hospital, Place } from './classes.js';
 
 /**
  * @typedef {import('./types.js').Color} Color
@@ -250,7 +250,7 @@ export default class Map {
      * @param {string} type 
      * @param {number} radius 
      * @param {Promise<Place>} type 
-     * @returns {Promise<{name: string, municipality: string, department: string, lat: number, lng: number}[]>}
+     * @returns {Promise<{name: string, adminArea1: string, adminArea2: string, lat: number, lng: number}[]>}
     */
     async getNearbyPlace(name, place, type, radius = 50000) {
         /** @type {google.maps.places.PlacesService} */
@@ -269,8 +269,10 @@ export default class Map {
                         const searchResults = []
 
                         for (const place of results) {
-                            const hospital = await this.#getPlaceDetails(place);
-                            if (hospital) searchResults.push(hospital);
+                            const placeDetails = await this.#getPlaceDetails(place)
+                            if (placeDetails) {
+                                searchResults.push(placeDetails)
+                            }
                         }
 
                         resolve(searchResults);
@@ -285,7 +287,7 @@ export default class Map {
     /**
      * 
      * @param {google.maps.places.PlaceResult} placeResult 
-     * @returns {Promise<{name: string, municipality: string, department: string, lat: number, lng: number}>}
+     * @returns {Promise<{name: string, adminArea1: string, adminArea2: string, lat: number, lng: number}>}
      */
     async #getPlaceDetails(placeResult) {
         /** @type {google.maps.Geocoder} */
@@ -294,21 +296,21 @@ export default class Map {
         return new Promise((resolve) => {
             geocoder.geocode({ location: placeResult.geometry?.location }, (results, status) => {
                 if (status === "OK" && results && results.length > 0) {
-                    let municipality = "", department = "";
+                    let adminArea1 = "", adminArea2 = ""
 
                     results[0].address_components.forEach((component) => {
-                        if (component.types.includes("administrative_area_level_2")) {
-                            municipality = component.long_name;
-                        }
                         if (component.types.includes("administrative_area_level_1")) {
-                            department = component.long_name;
+                            adminArea1 = component.long_name;
+                        }
+                        if (component.types.includes("administrative_area_level_2")) {
+                            adminArea2 = component.long_name;
                         }
                     });
 
                     resolve({
                         name: placeResult.name || "",
-                        municipality,
-                        department,
+                        adminArea1: adminArea1,
+                        adminArea2: adminArea2,
                         lat: placeResult.geometry?.location?.lat() || 0,
                         lng: placeResult.geometry?.location?.lng() || 0,
                     });
@@ -316,8 +318,8 @@ export default class Map {
                     resolve(
                         {
                             name: "",
-                            municipality: "",
-                            department: "",
+                            adminArea1: "",
+                            adminArea2: "",
                             lat: 0,
                             lng: 0
                         }

@@ -16,8 +16,12 @@
 // HTML
 
 /**
+ * @typedef {MouseEvent | google.maps.Data.MouseEvent} TooltipEvent
+ */
+
+/**
  * @callback TooltipHandler
- * @param {MouseEvent | google.maps.Data.MouseEvent} event
+ * @param {TooltipEvent} event
  * @returns {void}
  */
 

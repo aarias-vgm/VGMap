@@ -81,7 +81,7 @@ export class Department extends Area {
      * @param {number} lng 
     */
     constructor(id, name, population, estimatedPopulation, lat, lng) {
-        super(id, name, lat, lng, population, estimatedPopulation)
+        super(id, name, population, estimatedPopulation, lat, lng)
         this.population = population
         this.estimatedPopulation = estimatedPopulation
         this.municipalities = []
@@ -112,7 +112,7 @@ export class Municipality extends Area {
      * @param {number} lng 
     */
     constructor(id, name, type, population, estimatedPopulation, lat, lng) {
-        super(id, name, lat, lng, population, estimatedPopulation)
+        super(id, name, population, estimatedPopulation, lat, lng)
         this.type = type
         // @ts-ignore
         this.department = undefined
@@ -143,7 +143,7 @@ export class Locality extends Area {
      * @param {number} lng 
     */
     constructor(id, name, type, population, estimatedPopulation, lat, lng) {
-        super(id, name, lat, lng, population, estimatedPopulation)
+        super(id, name, population, estimatedPopulation, lat, lng)
         this.type = type
         // @ts-ignore
         this.municipality = undefined
