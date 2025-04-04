@@ -4,6 +4,7 @@ import { Place } from './classes.js';
 /**
  * @typedef {import('./types.js').Color} Color
  * @typedef {import('./types.js').PinColor} PinColor
+ * @typedef {import('./types.js').Distance} Distance
  */
 
 export default class Map {
@@ -187,7 +188,7 @@ export default class Map {
      * @param {Place} place1 
      * @param {Place} place2 
      * @param {google.maps.TravelMode} travelMode 
-     * @returns {Promise<{distance: {text: string, value: number}, duration: {text: string, value: number}}?>}
+     * @returns {Promise<Distance?>}
      */
     async calculateDistance(place1, place2, travelMode = google.maps.TravelMode.DRIVING) {
         /** @type {google.maps.DistanceMatrixService} */

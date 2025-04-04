@@ -41,7 +41,8 @@ async function run() {
     //await mapManager.calculatePlacesDistances(hospitalsDict, sellersDict, google.maps.TravelMode.DRIVING, true)
     // await mapManager.calculatePlacesDistances(hospitalsDict, areasDict, google.maps.TravelMode.DRIVING, true)
 
-    // await assignHospitalsToSellers(hospitalsDict, sellersDict)
+    await assignHospitalsToSellers(hospitalsDict, sellersDict)
+    await assignAreasToSellers(areasDict, sellersDict)
 
     // let sum = 0
     // for (const seller of Object.values(sellersDict)) {
@@ -124,9 +125,14 @@ async function run() {
 
     const sellers = Object.values(sellersDict)
 
+    let sum = 0
+
     for (let i = 0; i < sellers.length; i++) {
         await mapManager.createSellerMarker(sellers[i])
         sellerColors[sellers[i].id] = availableColors[i % availableColors.length - 1]
+        const count = sellers[i].hospitals.length
+        console.log(count)
+        sum += count
     }
 
     await mapManager.setFeatureEvents()
@@ -135,19 +141,17 @@ async function run() {
     //     await mapManager.createHospitalMarker(hospital)
     // }
 
-    // console.log(sellers)
-
     // Evento para mostrar el menú con click derecho
     // mapManager.map.map.addListener("rightclick", (event) => {
-        // lastClickedCoords = { lat: event.latLng.lat(), lng: event.latLng.lng() };
-        // contextMenu.style.left = event.pixel.x + "px";
-        // contextMenu.style.top = event.pixel.y + "px";
-        // contextMenu.style.display = "block";
-        // mapManager.map.map.data.setStyle((feature) => {
-        //     return {
-        //         fillColor: "#ff0000"
-        //     }
-        // })
+    // lastClickedCoords = { lat: event.latLng.lat(), lng: event.latLng.lng() };
+    // contextMenu.style.left = event.pixel.x + "px";
+    // contextMenu.style.top = event.pixel.y + "px";
+    // contextMenu.style.display = "block";
+    // mapManager.map.map.data.setStyle((feature) => {
+    //     return {
+    //         fillColor: "#ff0000"
+    //     }
+    // })
     // });
 
     // for (const [areaId, area] of Object.entries(areasDict)) {
@@ -526,74 +530,58 @@ async function assignHospitalsToSellers(hospitalsDict, sellersDict) {
     const response = await fetch("./public/data/ndjson/distancesDrivingHospitalToSeller.ndjson");
 
     const reader = response.body?.getReader();
+
     if (reader) {
         const decoder = new TextDecoder("utf-8");
 
-        let currentHospital1Id = ""
-        let partialLine = "";
-
-        let distancesObject = Object.create(null)
-
-        let firstTime = true
-        let secondsTime = true
-
-        const processLine = (/** @type {Object<string, number>}>} */ distancesDict, /** @type {string} */ line) => {
+        const processLine = (/** @type {Boolean} */ lastLine = false) => {
             try {
-                /** @type {DistanceLine}>} */
+                /** @type {DistanceLine} */
                 const distanceLine = JSON.parse(line);
                 // @ts-ignore
-                const hospital = hospitalsDict[distanceLine["hospital"]]
+                const hospital = hospitalsDict[distanceLine["hospital"]];
                 // @ts-ignore
-                const seller = sellersDict[distanceLine["seller"]]
+                const seller = sellersDict[distanceLine["seller"]];
 
-                if (!currentHospital1Id) {
-                    currentHospital1Id = hospital.id
-                } else {
-                    if (currentHospital1Id == hospital.id) {
-                        // distancesDict[seller.id] = distanceLine.duration.value
-                    } else {
-                        if (firstTime){
-                            console.log(currentHospital1Id)
-                            console.log(distancesDict)
-                            firstTime = false
-                        } else {
-                            if (secondsTime){
-                                console.log(currentHospital1Id)
-                                console.log(distancesDict)
-                                secondsTime = false
-                            }
+                if (!hospitalId) {
+                    hospitalId = hospital.id;
+                }
+
+                if (hospitalId != hospital.id || lastLine) {
+                    let minDistance = Number.MAX_VALUE;
+                    let closestSellerId = "";
+
+                    for (const [sellerId, distance] of Object.entries(distancesDict)) {
+                        if (distance < minDistance) {
+                            minDistance = distance;
+                            closestSellerId = sellerId;
                         }
-                        let minDistance = Number.MAX_VALUE
-                        let minDistanceSellerId = ""
-
-                        for (const [sellerId, distance] of Object.entries(distancesDict)) {
-                            if (distance < minDistance) {
-                                minDistance = distance
-                                minDistanceSellerId = sellerId
-                            }
-                        }
-
-                        // if (minDistance <= 14400) {
-                        const currentHospital = hospitalsDict[currentHospital1Id]
-                        const currentSeller = sellersDict[minDistanceSellerId]
-
-                        currentHospital.seller = currentSeller
-                        currentSeller.hospitals.push(currentHospital)
-
-                        // if (currentHospital.municipality.department.name === "Atlántico") {
-                        //     console.log("En Barranquilla me quedo. :v")
-                        // }
-                        // }
-
-                        currentHospital1Id = hospital.id
-
-                        distancesDict = Object.create(null)
                     }
+
+                    const currentHospital = hospitalsDict[hospitalId];
+                    const currentSeller = sellersDict[closestSellerId];
+
+                    currentHospital.seller = currentSeller;
+                    currentSeller.hospitals.push(currentHospital);
+
+                    hospitalId = hospital.id
+                    distancesDict = { [seller.id]: distanceLine.duration.value }
+                } else {
+                    distancesDict[seller.id] = distanceLine.duration.value;
                 }
             } catch (error) {
                 console.error("Error parsing line:", line, error);
             }
-        }
+        };
+
+        /** @type {string} */
+        let line = ""
+        /** @type {string} */
+        let hospitalId = ""
+        /** @type {Object<string, number>}>} */
+        let distancesDict = Object.create(null)
+
+        let partialLine = "";
 
         while (true) {
             const { value, done } = await reader.read();
@@ -608,19 +596,19 @@ async function assignHospitalsToSellers(hospitalsDict, sellersDict) {
                 partialLine = lines.pop() || "";
 
                 for (const rawLine of lines) {
-                    const line = rawLine.trim();
+                    line = rawLine.trim();
 
                     if (line) {
-                        processLine(distancesObject, line)
+                        processLine()
                     };
                 }
             }
         }
 
-        const finalLine = partialLine.trim();
+        line = partialLine.trim();
 
-        if (finalLine) {
-            processLine(distancesObject, finalLine)
+        if (line) {
+            processLine(true)
         }
     }
 }

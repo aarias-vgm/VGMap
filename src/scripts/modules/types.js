@@ -35,11 +35,7 @@
  */
 
 /**
- * @typedef {Object} DistanceLine
- * @property {string} place1Id
- * @property {string} place2Id
- * @property {google.maps.TravelMode} travelMode
- * @property {Distance} distance  // or perhaps this should be just Distance
+ * @typedef {{place1Id: string, place2Id: string, travelMode: google.maps.TravelMode, distance: { text: string, value: number }, duration: { text: string, value: number } }} DistanceLine
  */
 
 /**
