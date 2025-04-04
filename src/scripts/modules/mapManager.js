@@ -11,6 +11,7 @@ import Files from "./files.js"
  * @typedef {import('./types.js').PinColor} PinColor
  * @typedef {import('./types.js').MapEvent} MapEvent
  * @typedef {import('./types.js').MapFeature} MapFeature
+ * @typedef {import('./types.js').Rect} Rect
  */
 
 export default class MapManager {
@@ -292,16 +293,78 @@ export default class MapManager {
         }
     }
 
-    async setFeatureEvents(){
+    async createFeatureTooltips(){
 
-        const eventAdapter = new MapEventAdapter()
+        /** @type {PinColor} */
+        const pinColors = { background: "#FFFFFF", border: "#DC143C", "glyph": "#DC143C", hoverBackground: "#F5F5F5", hoverBorder: "#c51236", hoverGlyph: "#c51236" }
+
+        /** @type {Color} */
+        const nameColors = { back: "#FFFFFF", font: "#DC143C", border: "#DC143C" }
+
+        /** @type {Color} */
+        const infoColors = { back: "#DC143C", font: "#FFFFFF", border: "#DC143C" }
+
+        /** @type {Color} */
+        const selectionColors = { back: "#ffffff", font: "#ad102f" }
+
+        /** @type {Color} */
+        const scrollColors = { back: "transparent", fore: "#ad102f" }
+
+        /** @type {Color[]} */
+        const tagColors = [
+            { back: "#E8627D", font: "#FFFFFF" },
+            { back: "#EE8A9E", font: "#FFFFFF" },
+            { back: "#F3B1BE", font: "#000000" },
+            { back: "#F9D8DF", font: "#000000" },
+        ]
+
+        const faIcon = "fa-map"
 
         const returnInHTML = (/** @type {MapFeature} */ feature) => {
-            const name = feature.getProperty("name")
+            const name = feature.getProperty('name');
+    
             return `
+            <div class="feature" style="padding: 5px; border: 2px solid ${nameColors.border}; border-radius: 5px; background-color: ${nameColors.back}; color: ${nameColors.font};">
+            <i class="fa ${faIcon}"></i>
                 <span>${name}</span>
+            </div>
             `
         }
+        let index = Utils.getRandomNumber(tagColors.length);
+
+        const returnClickHTMLL = (/** @type {google.maps.Data.Feature} */ feature) => {
+
+            const name = feature.getProperty('name');
+            const area = feature.getProperty('area');
+            const population2025 = feature.getProperty('population2025');
+            const density2025 = feature.getProperty('density2025');
+            const population2035 = feature.getProperty('population2035');
+            const density2035 = feature.getProperty('density2035');
+    
+            return `
+            <div class="feature" style="padding: 10px; border: 2px solid ${infoColors.border}; border-radius: 5px; background-color: ${infoColors.back}; color: ${infoColors.font};">
+                <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                    <h5 style="margin-bottom: 8px;">
+                        <i class="fa ${faIcon}" style="margin-right: 5px;"></i>
+                        <span>Nombre:${name}</span>
+
+                        <span>Area:${area}</span>
+                    </h5>
+                    <div style="margin-bottom: 4px;">
+                        <strong>Population 2025:</strong> <span>${population2025}</span><br>
+                        <strong>Density 2025:</strong> <span>${density2025}</span>
+                    </div>
+                    <div>
+                        <strong>Population 2035:</strong> <span>${population2035}</span><br>
+                        <strong>Density 2035:</strong> <span>${density2035}</span>
+                    </div>
+                </div>
+            </div>
+            `;
+        }
+
+
+        const eventAdapter = new MapEventAdapter()
 
         const showHover = (/** @type {MapEvent} */ event) => {
             this.map.map.data.overrideStyle(event.feature, {
@@ -314,8 +377,13 @@ export default class MapManager {
             this.map.map.data.revertStyle(event.feature);
         }
 
-        Tooltip.addInTooltip(eventAdapter, this.map.map.data, returnInHTML, showHover, (eventRect, tooltipRect) => [eventRect.x, eventRect.y])
+        
+        
+
+        Tooltip.addInTooltip(eventAdapter, this.map.map.data, returnInHTML, showHover, (eventRect, tooltipRect) => [eventRect.x, eventRect.y+5])
         Tooltip.addOutTooltip(eventAdapter, this.map.map.data, hideHover)
+        Tooltip.addClickTooltip(eventAdapter, this.map.map.data, returnClickHTMLL, showHover, (/** @type {Rect} */ targetRect, /** @type {Rect} */ tooltipRect) => [targetRect.x,targetRect.y])
+
     }
 
 
