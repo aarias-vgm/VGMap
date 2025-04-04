@@ -91,6 +91,7 @@ small {
 .vertical-slider {
     overflow-x: hidden;
     overflow-y: auto;
+    pointer-events: auto !important;
 }
 
 .vertical-slider::-webkit-scrollbar {
@@ -135,44 +136,49 @@ small {
 
 .tooltip {
     display: block;
-    transform: translate(-50%);
+    transform: translateX(-50%);
     transition: all 0.25s ease-in-out;
 }
 
 .tooltip,
 .tooltip * {
-    user-select: text;
-    pointer-events: auto;
+    user-select: none;
+    pointer-events: none;
 }
 
 #coords-tooltip {
     user-select: none;
 }
 
-#name-tooltip {
+#in-tooltip {
     max-width: 200px;
     line-height: 1.25;
     text-align: center;
     cursor: pointer;
 }
 
-#name-tooltip .seller {
+#in-tooltip .seller {
     max-width: 200px;
 }
 
-#name-tooltip .hospital {
+#in-tooltip .hospital {
     max-width: 300px;
 }
 
-#info-tooltip {
+#click-tooltip {
     line-height: 1.1;
     text-align: left;
+    pointer-events: auto;
+}
+
+#click-tooltip, #click-tooltip * {
+    user-select: text;
 }
 
 #coords-tooltip {
     line-height: 1;
     text-align: left;
-    pointer-events: all;
+    pointer-events: auto;
 }
 
 #coords-tooltip button {
@@ -182,6 +188,11 @@ small {
 
 #coords-tooltip button:focus {
     animation: flash-animation 0.25s ease-out;
+}
+
+.coords-icon {
+    cursor: pointer;
+    pointer-events: auto;
 }
 
 @keyframes flash-animation {

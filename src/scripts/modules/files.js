@@ -79,7 +79,7 @@ async function saveJSON(data, name = "file", ext = "json", a = null) {
 }
 
 /**
- * Transform data into JSON type and download it.
+ * Transform data into NDJSON type and download it.
  * @param {Object[]} data
  * @param {string} name
  * @param {HTMLAnchorElement?} a

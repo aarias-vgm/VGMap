@@ -1,14 +1,20 @@
 /**
  * @typedef {import('./types.js').TooltipHandler} TooltipHandler
- * @typedef {import('./types.js').TooltipEventType} TooltipEventType
+ * @typedef {import('./types.js').MapFeature} MapFeature
+ * @typedef {import('./types.js').EventType} EventType
+ * @typedef {import('./types.js').MapEvent} MapEvent
+ * @typedef {import('./types.js').MapData} MapData
+ * @typedef {import('./types.js').Rect} Rect
  */
+
+import HTML from './html.js'
 
 /** @type {HTMLElement} */
 // @ts-ignore
-const inTooltip = document.getElementById("name-tooltip")
+const inTooltip = document.getElementById("in-tooltip")
 /** @type {HTMLElement} */
 // @ts-ignore
-const clickTooltip = document.getElementById("info-tooltip")
+const clickTooltip = document.getElementById("click-tooltip")
 /** @type {HTMLElement} */
 // @ts-ignore
 const coordsTooltip = document.getElementById("coords-tooltip")
@@ -17,10 +23,9 @@ const coordsTooltip = document.getElementById("coords-tooltip")
 let openTooltips = []
 /** @type {EventTarget?} */
 let lastTarget = null
-/** @type {TooltipEventAdapter} */
+/** @type {EventAdapter} */
 // @ts-ignore
 let lastEventAdapter = null
-
 
 /**
  * 
@@ -28,7 +33,7 @@ let lastEventAdapter = null
  * @param {number} x 
  * @param {number} y 
  */
-function setPosition(tooltip, x, y) {
+function setTooltipPosition(tooltip, x, y) {
     const offset = 20
 
     const screenWidth = window.innerWidth;
@@ -54,10 +59,10 @@ function setPosition(tooltip, x, y) {
     tooltip.style.top = `${y}px`;
 }
 
-class TooltipEventAdapter {
+class EventAdapter {
 
     constructor() {
-        if (new.target === TooltipEventAdapter) {
+        if (new.target === EventAdapter) {
             throw new Error("An abstract class cannot be instantiated.");
         }
     }
@@ -65,7 +70,7 @@ class TooltipEventAdapter {
     /**
      * 
      * @param {any} element 
-     * @param {TooltipEventType} eventType 
+     * @param {EventType} eventType 
      * @param {TooltipHandler} handler
      */
     onEvent(element, eventType, handler) {
@@ -73,7 +78,7 @@ class TooltipEventAdapter {
     }
 
     /**
-     * @param {TooltipEventType} eventType 
+     * @param {EventType} eventType 
      * @return {string}
      */
     returnEventName(eventType) {
@@ -84,19 +89,27 @@ class TooltipEventAdapter {
      * @param {any} event
      * @return {any}
     */
-    returnEventElement(event) {
+    returnEventTarget(event) {
         throw new Error("returnEventElement method not overwritten yet.");
+    }
+
+    /**
+     * @param {any} event
+     * @return {Rect}
+    */
+    returnRect(event) {
+        throw new Error("setPosition method not overwritten yet.");
     }
 }
 
-export class HTMLTooltipEventAdapter extends TooltipEventAdapter {
+export class HTMLEventAdapter extends EventAdapter {
     constructor() {
         super()
     }
 
     /**
      * @param {HTMLElement} element
-     * @param {TooltipEventType} eventType 
+     * @param {EventType} eventType 
      * @param {TooltipHandler} handler 
     */
     onEvent(element, eventType, handler) {
@@ -107,7 +120,7 @@ export class HTMLTooltipEventAdapter extends TooltipEventAdapter {
 
     /**
      * 
-     * @param {TooltipEventType} eventType 
+     * @param {EventType} eventType 
      * @returns {"mouseenter" | "mouseleave" | "click" | "mousemove"}
      */
     returnEventName(eventType) {
@@ -127,26 +140,37 @@ export class HTMLTooltipEventAdapter extends TooltipEventAdapter {
     /**
      * 
      * @param {MouseEvent} event 
-     * @return {HTMLElement?} 
+     * @return {HTMLElement} 
      */
-    returnEventElement(event) {
-        return event.target instanceof HTMLElement ? event.target : null
+    returnEventTarget(event) {
+        // @ts-ignore
+        return event.target 
+    }
+
+    /**
+     * 
+     * @param {MouseEvent} event 
+     * @return {Rect} 
+     */
+    returnRect(event) {
+        const target = this.returnEventTarget(event)
+        return HTML.getRect(target)
     }
 }
 
-export class MapTooltipEventAdapter extends TooltipEventAdapter {
+export class MapEventAdapter extends EventAdapter {
     constructor() {
         super()
     }
 
     /**
-     * @param {google.maps.Data} element
-     * @param {TooltipEventType} eventType
+     * @param {MapData} element
+     * @param {EventType} eventType
      * @param {TooltipHandler} handler
      */
     onEvent(element, eventType, handler) {
         if (!(element instanceof HTMLElement)) {
-            element.addListener(this.returnEventName(eventType), (/** @type {google.maps.Data.MouseEvent} */ event) => {
+            element.addListener(this.returnEventName(eventType), (/** @type {MapEvent} */ event) => {
                 handler(event)
             });
         }
@@ -154,7 +178,7 @@ export class MapTooltipEventAdapter extends TooltipEventAdapter {
 
     /**
      * 
-     * @param {TooltipEventType} eventType 
+     * @param {EventType} eventType 
      * @returns {"mouseover" | "mouseout" | "click" | "mousemove"}
      */
     returnEventName(eventType) {
@@ -172,44 +196,58 @@ export class MapTooltipEventAdapter extends TooltipEventAdapter {
 
     /**
      * 
-     * @param {google.maps.Data.MouseEvent} event 
-     * @return {google.maps.Data.Feature?} 
+     * @param {MapEvent} event 
+     * @return {MapFeature} 
      */
-    returnEventElement(event) {
-        return event instanceof google.maps.Data.Feature ? event.feature : null
+    returnEventTarget(event) {
+        return event.feature
+    }
+
+    /**
+     * 
+     * @param {MapEvent} event 
+     * @return {Rect} 
+     */
+    returnRect(event) {
+        const x = event.domEvent.clientX
+        const y = event.domEvent.clientY
+        return { x: x, y: y, w: 0, h: 0 }
     }
 }
 
 /**
  * 
- * @param {TooltipEventAdapter} adapter
+ * @param {EventAdapter} adapter
  * @param {any} element
- * @param {function((any)): string} returnHtml
+ * @param {function(any): string} returnHtml
+ * @param {function(Rect, Rect): [number, number]} setPosition
  * @param {function | function[]} functions
  */
-function addInTooltip(adapter, element, returnHtml, functions = []) {
+function addInTooltip(adapter, element, returnHtml, setPosition, functions = []) {
     const tooltip = inTooltip;
     adapter.onEvent(element, "in", (event) => {
-        const target = adapter.returnEventElement(event)
         if (!clickTooltip.classList.contains("visible")) {
+            const target = adapter.returnEventTarget(event)
             tooltip.innerHTML = returnHtml(target);
             functions = functions instanceof Array ? functions : [functions]
-            functions.forEach(f => f(event));
-            tooltip.classList.replace("hidden", "visible");
+            functions.forEach(f => f(event))
+            const targetRect = adapter.returnRect(event)
+            const tooltipRect = HTML.getRect(tooltip)
+            setTooltipPosition(tooltip, ...setPosition(targetRect, tooltipRect))
         }
+        tooltip.classList.replace("hidden", "visible");
     });
 }
 
 /**
  * 
- * @param {TooltipEventAdapter} adapter
+ * @param {EventAdapter} adapter
  * @param {any} element
  * @param {function | function[]} functions
  */
 function addOutTooltip(adapter, element, functions = []) {
     const tooltip = inTooltip;
     adapter.onEvent(element, "out", (event) => {
-        const target = adapter.returnEventElement(event)
         functions = functions instanceof Array ? functions : [functions]
         functions.forEach(f => f(event));
         tooltip.classList.replace("visible", "hidden");
@@ -218,23 +256,28 @@ function addOutTooltip(adapter, element, functions = []) {
 
 /**
  * 
- * @param {TooltipEventAdapter} adapter
+ * @param {EventAdapter} adapter
  * @param {any} element
  * @param {function((any)): string} returnHtml
+ * @param {function(Rect, Rect): [number, number]} setPosition
  * @param {function | function[]} functions
  */
-function addClickTooltip(adapter, element, returnHtml, functions = []) {
+function addClickTooltip(adapter, element, returnHtml, setPosition, functions = []) {
     const tooltip = clickTooltip
 
     adapter.onEvent(element, "click", (event) => {
-        const target = adapter.returnEventElement(event)
-        lastTarget = target
+        const target = adapter.returnEventTarget(event)
+        lastTarget = target;
+        console.log(target)
         lastEventAdapter = adapter
         inTooltip.classList.replace("visible", "hidden")
         coordsTooltip.classList.replace("visible", "hidden")
         tooltip.innerHTML = returnHtml(lastTarget)
         functions = functions instanceof Array ? functions : [functions]
         functions.forEach(f => f(event))
+        const targetRect = adapter.returnRect(event)
+        const tooltipRect = HTML.getRect(tooltip)
+        setTooltipPosition(tooltip, ...setPosition(targetRect, tooltipRect))
         tooltip.classList.replace("hidden", "visible");
         if (!openTooltips.includes(tooltip)) {
             openTooltips.push(tooltip)
@@ -245,23 +288,27 @@ function addClickTooltip(adapter, element, returnHtml, functions = []) {
 
 /**
  * 
- * @param {TooltipEventAdapter} adapter
+ * @param {EventAdapter} adapter
  * @param {any} element
  * @param {function((any)): string} returnHtml
+ * @param {function(Rect, Rect): [number, number]} setPosition
  * @param {function | function[]} functions
  */
-function addCoordsTooltip(adapter, element, returnHtml, functions = []) {
+function addCoordsTooltip(adapter, element, returnHtml, setPosition, functions = []) {
     const tooltip = coordsTooltip
 
     adapter.onEvent(element, "click", (event) => {
         if (tooltip.classList.contains("hidden")) {
-            const target = adapter.returnEventElement(event)
+            const target = adapter.returnEventTarget(event)
             lastTarget = target
             lastEventAdapter = adapter
             tooltip.innerHTML = returnHtml(lastTarget)
             functions = functions instanceof Array ? functions : [functions]
             functions.forEach(f => f(event))
             tooltip.classList.replace("hidden", "visible");
+            const targetRect = adapter.returnRect(event)
+            const tooltipRect = HTML.getRect(tooltip)
+            setTooltipPosition(tooltip, ...setPosition(targetRect, tooltipRect))
             if (!openTooltips.includes(tooltip)) {
                 openTooltips.push(tooltip)
             }
@@ -275,7 +322,7 @@ function addCoordsTooltip(adapter, element, returnHtml, functions = []) {
  * @param {any} event 
  */
 function onClickOut(event) {
-    hideTooltip(lastEventAdapter.returnEventElement(event))
+    hideTooltip(lastEventAdapter.returnEventTarget(event))
 }
 
 /**
@@ -284,7 +331,7 @@ function onClickOut(event) {
 */
 function hideTooltip(target) {
 
-    if (target instanceof Node && target != lastTarget) {
+    if (target instanceof HTMLElement && target != lastTarget) {
 
         let targetIndex = openTooltips.findIndex((descendant) => descendant.contains(target)); // target index == -1: target is not a descendant
 
@@ -308,7 +355,6 @@ function hideTooltip(target) {
 }
 
 const Tooltip = {
-    setPosition: setPosition,
     inTooltip: inTooltip,
     clickTooltip: clickTooltip,
     coordsTooltip: coordsTooltip,

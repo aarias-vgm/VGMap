@@ -1,7 +1,11 @@
 /**
+ * @typedef {import('./types.js').Rect} Rect
+ */
+
+/**
  * 
  * @param {HTMLElement} element 
- * @returns {{x: number, y: number, w: number, h: number}}
+ * @returns {Rect}
  */
 function getRect(element) {
     const rect = element.getBoundingClientRect();

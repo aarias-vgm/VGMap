@@ -36,7 +36,7 @@ async function run() {
     // await mapManager.calculatePlacesDistances(departmentsDict, departmentsDict, google.maps.TravelMode.DRIVING, true)
     //await mapManager.calculatePlacesDistances(hospitalsDict, sellersDict, google.maps.TravelMode.DRIVING, true)
     // await mapManager.calculatePlacesDistances(hospitalsDict, areasDict, google.maps.TravelMode.DRIVING, true)
-    
+
     // await assignHospitalsToSellers(hospitalsDict, sellersDict)
 
     // let sum = 0
@@ -70,9 +70,9 @@ async function run() {
     //         return accumulator;
     //     }, {});
 
-    for (const [departmentId, department] of Object.entries(departmentsDict)) {
-        mapManager.addGeoJSON(`geojson/departments/${departmentId}.geojson`)
-    }
+    // for (const [departmentId, department] of Object.entries(departmentsDict)) {
+    //     mapManager.addGeoJSON(`geojson/departments/${departmentId}.geojson`)
+    // }
 
     const box = document.getElementById("box")
 
@@ -89,8 +89,6 @@ async function run() {
         //     box.style.display = "block";
         // });
     }
-
-
 
     // mapManager.addGeoJSON(`geojson/departments/11.geojson`)
 
@@ -127,7 +125,11 @@ async function run() {
         sellerColors[sellers[i].id] = availableColors[i % availableColors.length - 1]
     }
 
-    console.log(sellers)
+    for (const hospital of Object.values(hospitalsDict).slice(0, 20)) {
+        await mapManager.createHospitalMarker(hospital)
+    }
+
+    // console.log(sellers)
 
     // Evento para mostrar el menú con click derecho
     // mapManager.map.googleMap.addListener("rightclick", (event) => {
@@ -147,48 +149,48 @@ async function run() {
     //     }
     // }
 
-    mapManager.map.map.data.setStyle((feature) => {
+    // mapManager.map.map.data.setStyle((feature) => {
 
-        let areaId = ""
+    //     let areaId = ""
 
-        try {
-            areaId = feature.getId()
-        } catch (error) {
-            console.error(areaId)
-        }
+    //     try {
+    //         areaId = feature.getId()
+    //     } catch (error) {
+    //         console.error(areaId)
+    //     }
 
-        let fillColor = "#000000"
+    //     let fillColor = "#000000"
 
-        // @ts-ignore
-        if (areaId) {
-            const area = areasDict[areaId]
-            if (area) {
-                let departmentId
-                if (area instanceof Municipality) {
-                    departmentId = area.department.id
-                } else if (area instanceof Locality) {
-                    departmentId = area.municipality.department.id
-                }
+    //     // @ts-ignore
+    //     if (areaId) {
+    //         const area = areasDict[areaId]
+    //         if (area) {
+    //             let departmentId
+    //             if (area instanceof Municipality) {
+    //                 departmentId = area.department.id
+    //             } else if (area instanceof Locality) {
+    //                 departmentId = area.municipality.department.id
+    //             }
 
-                // @ts-ignore
-                if (excludedDepartments.includes(departmentId)) {
-                    fillColor = "#ff0000"
-                } else {
-                    fillColor = sellerColors[area.seller?.id]
-                }
-            }
-        } else {
-            console.log(feature)
-        }
+    //             // @ts-ignore
+    //             if (excludedDepartments.includes(departmentId)) {
+    //                 fillColor = "#ff0000"
+    //             } else {
+    //                 fillColor = sellerColors[area.seller?.id]
+    //             }
+    //         }
+    //     } else {
+    //         console.log(feature)
+    //     }
 
-        return {
-            fillColor: fillColor,
-            fillOpacity: 1,
-            strokeColor: "white",
-            strokeWeight: 2,
-            strokeOpacity: 1
-        };
-    })
+    //     return {
+    //         fillColor: fillColor,
+    //         fillOpacity: 1,
+    //         strokeColor: "white",
+    //         strokeWeight: 2,
+    //         strokeOpacity: 1
+    //     };
+    // })
 
     // mapManager.map.map.data.setStyle((feature) => {
     //     const municipalityId = String(feature.getProperty("id"))
@@ -559,7 +561,7 @@ async function assignHospitalsToSellers(hospitalsDict, sellersDict) {
                             currentHospital.seller = currentSeller
                             currentSeller.hospitals.push(currentHospital)
 
-                            if (currentHospital.municipality.department.name === "Atlántico"){
+                            if (currentHospital.municipality.department.name === "Atlántico") {
                                 console.log("En Barranquilla me quedo. :v")
                             }
                         }

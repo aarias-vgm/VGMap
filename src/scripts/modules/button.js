@@ -15,20 +15,8 @@ function copyText(button, text) {
         });
 }
 
-// /**
-//  * 
-//  * @param {HTMLButtonElement} button 
-//  * @param {function[]} functions 
-//  */
-// function setClickFunctions(button, functions){
-//     button.onclick = () => {
-//         functions.forEach(f => f())
-//     }
-// }
-
 const Button = {
     copyText: copyText,
-    // setClickFunctions: setClickFunctions
 }
 
 export default Button

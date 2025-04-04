@@ -1,10 +1,9 @@
 import { MAPCENTER, MAPID, DIANKEY } from './constants.js';
-import { Hospital, Place } from './classes.js';
+import { Place } from './classes.js';
 
 /**
  * @typedef {import('./types.js').Color} Color
  * @typedef {import('./types.js').PinColor} PinColor
- * @typedef {import('./types.js').DataMouseEvent} DataMouseEvent
  */
 
 export default class Map {
@@ -142,14 +141,17 @@ export default class Map {
             position: element.getLatLng(),
             content: pin.element,
             title: `${elementType}: ${element.name}`,
-            zIndex: 9999,
+            zIndex: 999,
             draggable: false
         });
 
-        marker.element.addEventListener("mouseenter", (/** @type {MouseEvent} */ event) => {
-            event.stopPropagation();
+        marker.element.querySelectorAll('*').forEach((/** @type {HTMLElement} */ child) => {
+            child.style.pointerEvents = 'none';
+        });
 
+        marker.element.addEventListener("mouseenter", (/** @type {MouseEvent} */ event) => {
             marker.element.style.cursor = "pointer"
+
             pin.element.style.opacity = "0.9"
             pin.element.style.transform = "scale(1.2)";
             pin.element.style.transition = "all 0.2s ease-out";
@@ -158,12 +160,12 @@ export default class Map {
             pin.borderColor = pinColor.hoverBorder;
             pin.glyphColor = pinColor.hoverGlyph;
 
+            marker.element.style.zIndex = 1000
         });
         
         marker.element.addEventListener("mouseleave", (/** @type {MouseEvent} */ event) => {
-            event.stopPropagation();
-
             marker.element.style.cursor = "auto"
+
             pin.element.style.opacity = "1"
             pin.element.style.transform = "scale(1)";
             
@@ -173,6 +175,7 @@ export default class Map {
             
             setTimeout(() => {
                 pin.element.style.transition = "none";
+                marker.element.style.zIndex = 999
             }, 200)
         });
 

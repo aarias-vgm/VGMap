@@ -1,11 +1,10 @@
 import Button from "./button.js"
 import Map from "./map.js"
 import Style from "./style.js"
-import Tooltip, { HTMLTooltipEventAdapter } from "./tooltip.js"
+import Tooltip, { HTMLEventAdapter } from "./tooltip.js"
 import Utils from "./utils.js"
 import { Place, Hospital, Seller } from "./classes.js"
 import Files from "./files.js"
-import HTML from "./html.js"
 
 /**
  * @typedef {import('./types.js').Color} Color
@@ -78,14 +77,14 @@ export default class MapManager {
 
         if (marker.content instanceof HTMLElement) {
 
-            const returnNameHTML = (/** @type {HTMLElement} */ element) => `
+            const returnInHTML = (/** @type {HTMLElement} */ element) => `
                 <div class="hospital" style="padding: 10px; border: 2px solid ${nameColors.border}; border-radius: 5px; background-color: ${nameColors.back}; color: ${nameColors.font};">
                     <i class="fa ${faIcon}"></i>
                     <span>${hospital.name}</span>
                 </div>
             `
 
-            const returnInfoHTML = (/** @type {HTMLElement} */ element) => {
+            const returnClickHTML = (/** @type {HTMLElement} */ element) => {
                 let index = Utils.getRandomNumber(tagColors.length);
 
                 return `
@@ -142,7 +141,7 @@ export default class MapManager {
                     </code>
                 </button>
             `
-            const eventAdapter = new HTMLTooltipEventAdapter()
+            const eventAdapter = new HTMLEventAdapter()
 
             const setVerticalSliderHeight = () => {
                 const left = Tooltip.clickTooltip.querySelector(".left")
@@ -161,15 +160,15 @@ export default class MapManager {
                         const button = Tooltip.coordsTooltip.getElementsByTagName("button")[0]
                         button.onclick = () => Button.copyText(button, `${hospital.lat}, ${hospital.lng}`)
                     }
-                    Tooltip.addCoordsTooltip(eventAdapter, coordsElement, returnCoordsHTML, [setCopyFunction, () => { const rect = HTML.getRect(coordsElement); Tooltip.setPosition(Tooltip.coordsTooltip, rect.x, rect.y) }])
+                    Tooltip.addCoordsTooltip(eventAdapter, coordsElement, returnCoordsHTML, (elementRect, tooltipRect) => [elementRect.x, elementRect.y], setCopyFunction)
                 }
             }
 
-            const element = marker.content
+            const element = marker.element
 
-            Tooltip.addInTooltip(eventAdapter, marker.content, returnNameHTML, () => { const rect = HTML.getRect(element); Tooltip.setPosition(Tooltip.inTooltip, rect.x + rect.w / 2, rect.y - rect.h) })
-            Tooltip.addOutTooltip(eventAdapter, marker.content)
-            Tooltip.addClickTooltip(eventAdapter, marker.content, returnInfoHTML, [() => Style.setSelectionColors(selectionColors), () => Style.setScrollbarColors(scrollColors), setVerticalSliderHeight, addCoordsTooltip, () => { const rect = HTML.getRect(element); Tooltip.setPosition(Tooltip.clickTooltip, rect.x + rect.w / 2, rect.y - rect.h) }])
+            Tooltip.addInTooltip(eventAdapter, element, returnInHTML, (elementRect, tooltipRect) => [elementRect.x + elementRect.w / 2, elementRect.y - elementRect.h - tooltipRect.h / 2])
+            Tooltip.addOutTooltip(eventAdapter, element)
+            Tooltip.addClickTooltip(eventAdapter, element, returnClickHTML, (elementRect, tooltipRect) => [elementRect.x + elementRect.w / 2, elementRect.y - elementRect.h - tooltipRect.h * 0.75], [() => Style.setSelectionColors(selectionColors), () => Style.setScrollbarColors(scrollColors), setVerticalSliderHeight, addCoordsTooltip])
         }
     }
 
@@ -200,13 +199,13 @@ export default class MapManager {
 
         if (marker.content instanceof HTMLElement) {
 
-            const returnNameHTML = (/** @type {HTMLElement} */ element) => `
+            const returnInHTML = (/** @type {HTMLElement} */ element) => `
             <div class="seller" style="max-width: 300px; padding: 10px; border: 2px solid ${nameColors.border}; border-radius: 5px; background-color: ${nameColors.back}; color: ${nameColors.font};">
                 <i class="fa ${faIcon}"></i> <span>${seller.name}</span>
             </div>
             `
 
-            const returnInfoHTML = (/** @type {HTMLElement} */ element) => `
+            const returnClickHTML = (/** @type {HTMLElement} */ element) => `
                 <div class="seller" style="min-width: 150px; max-width: 300px; padding: 10px; border: 2px solid ${infoColors.border}; border-radius: 5px; background-color: ${infoColors.back}; color: ${infoColors.font};">
                     <div style="display: flex; flex-direction: row; justify-content: left; align-items: center;">
                         <div>
@@ -248,24 +247,26 @@ export default class MapManager {
                 </button>
             `
 
-            const eventAdapter = new HTMLTooltipEventAdapter()
+            const eventAdapter = new HTMLEventAdapter()
 
             const addCoordsTooltip = () => {
                 const coordsElement = Tooltip.clickTooltip.querySelector(".coords-icon")
+                console.log("holis")
                 if (coordsElement instanceof HTMLElement) {
                     const setCopyFunction = () => {
                         const button = Tooltip.coordsTooltip.getElementsByTagName("button")[0]
+                        console.log(button)
                         button.onclick = () => Button.copyText(button, `${seller.lat}, ${seller.lng}`)
                     }
-                    Tooltip.addCoordsTooltip(eventAdapter, coordsElement, returnCoordsHtml, [setCopyFunction, () => { const rect = HTML.getRect(coordsElement); Tooltip.setPosition(Tooltip.coordsTooltip, rect.x + rect.w, rect.y + rect.h) }])
+                    Tooltip.addCoordsTooltip(eventAdapter, coordsElement, returnCoordsHtml, (elementRect, tooltipRect) => [elementRect.x + elementRect.w, elementRect.y + elementRect.h], setCopyFunction)
                 }
             }
 
-            const element = marker.content
+            const element = marker.element
 
-            Tooltip.addInTooltip(eventAdapter, marker.content, returnNameHTML, () => { const rect = HTML.getRect(element); Tooltip.setPosition(Tooltip.inTooltip, rect.x + rect.w / 2, rect.y - rect.h) })
-            Tooltip.addOutTooltip(eventAdapter, marker.content)
-            Tooltip.addClickTooltip(eventAdapter, marker.content, returnInfoHTML, [() => Style.setSelectionColors(selectionColors), addCoordsTooltip, () => { const rect = HTML.getRect(element); Tooltip.setPosition(Tooltip.clickTooltip, rect.x + rect.w / 2, rect.y - rect.h) }])
+            Tooltip.addInTooltip(eventAdapter, element, returnInHTML, (elementRect, tooltipRect) => [elementRect.x + elementRect.w / 2, elementRect.y - elementRect.h])
+            Tooltip.addOutTooltip(eventAdapter, element)
+            Tooltip.addClickTooltip(eventAdapter, element, returnClickHTML, (elementRect, tooltipRect) => [elementRect.x + elementRect.w / 2, elementRect.y - elementRect.h - tooltipRect.h / 2], [() => Style.setSelectionColors(selectionColors), addCoordsTooltip])
         }
     }
 
