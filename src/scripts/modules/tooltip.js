@@ -144,7 +144,7 @@ export class HTMLEventAdapter extends EventAdapter {
      */
     returnEventTarget(event) {
         // @ts-ignore
-        return event.target 
+        return event.target
     }
 
     /**
@@ -217,37 +217,43 @@ export class MapEventAdapter extends EventAdapter {
 
 /**
  * 
- * @param {EventAdapter} adapter
+ * @param {EventAdapter} eventAdapter
  * @param {any} element
  * @param {function(any): string} returnHtml
- * @param {function(Rect, Rect): [number, number]} setPosition
- * @param {function | function[]} functions
+ * @param {(function | function[])} functions
+ * @param {(function(Rect, Rect): [number, number])?} setPosition
  */
-function addInTooltip(adapter, element, returnHtml, setPosition, functions = []) {
+function addInTooltip(eventAdapter, element, returnHtml, functions = [], setPosition = null) {
     const tooltip = inTooltip;
-    adapter.onEvent(element, "in", (event) => {
+    eventAdapter.onEvent(element, "in", (event) => {
         if (!clickTooltip.classList.contains("visible")) {
-            const target = adapter.returnEventTarget(event)
+            const target = eventAdapter.returnEventTarget(event)
+
             tooltip.innerHTML = returnHtml(target);
+
             functions = functions instanceof Array ? functions : [functions]
             functions.forEach(f => f(event))
-            const targetRect = adapter.returnRect(event)
-            const tooltipRect = HTML.getRect(tooltip)
-            setTooltipPosition(tooltip, ...setPosition(targetRect, tooltipRect))
+
+            if (setPosition) {
+                const eventRect = eventAdapter.returnRect(event)
+                const tooltipRect = HTML.getRect(tooltip)
+                setTooltipPosition(tooltip, ...setPosition(eventRect, tooltipRect))
+            }
+
+            tooltip.classList.replace("hidden", "visible");
         }
-        tooltip.classList.replace("hidden", "visible");
     });
 }
 
 /**
  * 
- * @param {EventAdapter} adapter
+ * @param {EventAdapter} eventAdapter
  * @param {any} element
  * @param {function | function[]} functions
  */
-function addOutTooltip(adapter, element, functions = []) {
+function addOutTooltip(eventAdapter, element, functions = []) {
     const tooltip = inTooltip;
-    adapter.onEvent(element, "out", (event) => {
+    eventAdapter.onEvent(element, "out", (event) => {
         functions = functions instanceof Array ? functions : [functions]
         functions.forEach(f => f(event));
         tooltip.classList.replace("visible", "hidden");
@@ -256,62 +262,75 @@ function addOutTooltip(adapter, element, functions = []) {
 
 /**
  * 
- * @param {EventAdapter} adapter
+ * @param {EventAdapter} eventAdapter
  * @param {any} element
  * @param {function((any)): string} returnHtml
- * @param {function(Rect, Rect): [number, number]} setPosition
  * @param {function | function[]} functions
+ * @param {(function(Rect, Rect): [number, number])?} setPosition
  */
-function addClickTooltip(adapter, element, returnHtml, setPosition, functions = []) {
+function addClickTooltip(eventAdapter, element, returnHtml, functions = [], setPosition = null) {
     const tooltip = clickTooltip
 
-    adapter.onEvent(element, "click", (event) => {
-        const target = adapter.returnEventTarget(event)
-        lastTarget = target;
-        console.log(target)
-        lastEventAdapter = adapter
-        inTooltip.classList.replace("visible", "hidden")
-        coordsTooltip.classList.replace("visible", "hidden")
-        tooltip.innerHTML = returnHtml(lastTarget)
+    eventAdapter.onEvent(element, "click", (event) => {
+        const target = eventAdapter.returnEventTarget(event)
+
+        tooltip.innerHTML = returnHtml(target)
+
         functions = functions instanceof Array ? functions : [functions]
         functions.forEach(f => f(event))
-        const targetRect = adapter.returnRect(event)
-        const tooltipRect = HTML.getRect(tooltip)
-        setTooltipPosition(tooltip, ...setPosition(targetRect, tooltipRect))
+
+        if (setPosition) {
+            const eventRect = eventAdapter.returnRect(event)
+            const tooltipRect = HTML.getRect(tooltip)
+            setTooltipPosition(tooltip, ...setPosition(eventRect, tooltipRect))
+        }
+
+        inTooltip.classList.replace("visible", "hidden")
+        coordsTooltip.classList.replace("visible", "hidden")
         tooltip.classList.replace("hidden", "visible");
+
         if (!openTooltips.includes(tooltip)) {
             openTooltips.push(tooltip)
         }
+        lastTarget = target;
+        lastEventAdapter = eventAdapter
         document.addEventListener('click', onClickOut)
     });
 }
 
 /**
  * 
- * @param {EventAdapter} adapter
+ * @param {EventAdapter} eventAdapter
  * @param {any} element
  * @param {function((any)): string} returnHtml
- * @param {function(Rect, Rect): [number, number]} setPosition
  * @param {function | function[]} functions
+ * @param {(function(Rect, Rect): [number, number])?} setPosition
  */
-function addCoordsTooltip(adapter, element, returnHtml, setPosition, functions = []) {
+function addCoordsTooltip(eventAdapter, element, returnHtml, functions = [], setPosition = null) {
     const tooltip = coordsTooltip
 
-    adapter.onEvent(element, "click", (event) => {
+    eventAdapter.onEvent(element, "click", (event) => {
         if (tooltip.classList.contains("hidden")) {
-            const target = adapter.returnEventTarget(event)
-            lastTarget = target
-            lastEventAdapter = adapter
-            tooltip.innerHTML = returnHtml(lastTarget)
+            const target = eventAdapter.returnEventTarget(event)
+
+            tooltip.innerHTML = returnHtml(target)
+
             functions = functions instanceof Array ? functions : [functions]
             functions.forEach(f => f(event))
+
+            if (setPosition) {
+                const eventRect = eventAdapter.returnRect(event)
+                const tooltipRect = HTML.getRect(tooltip)
+                setTooltipPosition(tooltip, ...setPosition(eventRect, tooltipRect))
+            }
+
             tooltip.classList.replace("hidden", "visible");
-            const targetRect = adapter.returnRect(event)
-            const tooltipRect = HTML.getRect(tooltip)
-            setTooltipPosition(tooltip, ...setPosition(targetRect, tooltipRect))
+
             if (!openTooltips.includes(tooltip)) {
                 openTooltips.push(tooltip)
             }
+            lastTarget = target
+            lastEventAdapter = eventAdapter
             document.addEventListener('click', onClickOut)
         }
     });

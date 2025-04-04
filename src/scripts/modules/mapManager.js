@@ -1,14 +1,16 @@
 import Button from "./button.js"
 import Map from "./map.js"
 import Style from "./style.js"
-import Tooltip, { HTMLEventAdapter } from "./tooltip.js"
+import Tooltip, { HTMLEventAdapter, MapEventAdapter } from "./tooltip.js"
 import Utils from "./utils.js"
-import { Place, Hospital, Seller } from "./classes.js"
+import { Place, Hospital, Seller, Municipality } from "./classes.js"
 import Files from "./files.js"
 
 /**
  * @typedef {import('./types.js').Color} Color
  * @typedef {import('./types.js').PinColor} PinColor
+ * @typedef {import('./types.js').MapEvent} MapEvent
+ * @typedef {import('./types.js').MapFeature} MapFeature
  */
 
 export default class MapManager {
@@ -87,6 +89,18 @@ export default class MapManager {
             const returnClickHTML = (/** @type {HTMLElement} */ element) => {
                 let index = Utils.getRandomNumber(tagColors.length);
 
+                let municipality = undefined
+                let locality = undefined
+
+                if (hospital.area) {
+                    if (hospital.area instanceof Municipality) {
+                        municipality = hospital.area
+                    } else {
+                        locality = hospital.area
+                        municipality = locality.municipality
+                    }
+                }
+
                 return `
                     <div class="hospital" style="padding: 10px; border: 2px solid ${infoColors.border}; border-radius: 5px; background-color: ${infoColors.back}; color: ${infoColors.font};">
                         <div style="display: flex; flex-direction: row; justify-content: left; align-items: start;">
@@ -99,9 +113,8 @@ export default class MapManager {
                                     <span>${hospital.name.split(" ").slice(1).join(" ")}</span>
                                 </h5>
                                 <em style="font-size: 0.75rem;">
-                                    <span>${hospital.municipality?.name}</span>
-                                    <span>(${hospital.municipality?.department?.name})</span>
-                                    ${hospital.locality ? '<span>' + hospital.locality.name + '</span>' : ''}
+                                    <span>${municipality?.name}</span>${locality ? '<span> | ' + locality.name + '</span>' : ''}
+                                    <span>(${municipality?.department?.name})</span>
                                     <span class="coords-icon" style="position: relative; margin-left: 2px; color: ${infoColors.font};">
                                         <i class="fa fa-location-dot"></i>
                                     </span>
@@ -160,15 +173,15 @@ export default class MapManager {
                         const button = Tooltip.coordsTooltip.getElementsByTagName("button")[0]
                         button.onclick = () => Button.copyText(button, `${hospital.lat}, ${hospital.lng}`)
                     }
-                    Tooltip.addCoordsTooltip(eventAdapter, coordsElement, returnCoordsHTML, (elementRect, tooltipRect) => [elementRect.x, elementRect.y], setCopyFunction)
+                    Tooltip.addCoordsTooltip(eventAdapter, coordsElement, returnCoordsHTML, setCopyFunction, (eventRect, tooltipRect) => [eventRect.x, eventRect.y])
                 }
             }
 
             const element = marker.element
 
-            Tooltip.addInTooltip(eventAdapter, element, returnInHTML, (elementRect, tooltipRect) => [elementRect.x + elementRect.w / 2, elementRect.y - elementRect.h - tooltipRect.h / 2])
+            Tooltip.addInTooltip(eventAdapter, element, returnInHTML, [], (eventRect, tooltipRect) => [eventRect.x + eventRect.w / 2, eventRect.y - eventRect.h - tooltipRect.h / 2])
             Tooltip.addOutTooltip(eventAdapter, element)
-            Tooltip.addClickTooltip(eventAdapter, element, returnClickHTML, (elementRect, tooltipRect) => [elementRect.x + elementRect.w / 2, elementRect.y - elementRect.h - tooltipRect.h * 0.75], [() => Style.setSelectionColors(selectionColors), () => Style.setScrollbarColors(scrollColors), setVerticalSliderHeight, addCoordsTooltip])
+            Tooltip.addClickTooltip(eventAdapter, element, returnClickHTML, [() => Style.setSelectionColors(selectionColors), () => Style.setScrollbarColors(scrollColors), setVerticalSliderHeight, addCoordsTooltip], (elementRect, tooltipRect) => [elementRect.x + elementRect.w / 2, elementRect.y - elementRect.h - tooltipRect.h * 0.75])
         }
     }
 
@@ -199,6 +212,18 @@ export default class MapManager {
 
         if (marker.content instanceof HTMLElement) {
 
+            let municipality = undefined
+            let locality = undefined
+
+            if (seller.area) {
+                if (seller.area instanceof Municipality) {
+                    municipality = seller.area
+                } else {
+                    locality = seller.area
+                    municipality = locality.municipality
+                }
+            }
+
             const returnInHTML = (/** @type {HTMLElement} */ element) => `
             <div class="seller" style="max-width: 300px; padding: 10px; border: 2px solid ${nameColors.border}; border-radius: 5px; background-color: ${nameColors.back}; color: ${nameColors.font};">
                 <i class="fa ${faIcon}"></i> <span>${seller.name}</span>
@@ -216,9 +241,8 @@ export default class MapManager {
                             <p style="margin-top: 3px;">${seller.address}</p>
                             <small style="display: flex; position: relative;">
                                 <em>
-                                    <span>${seller.municipality?.name}</span>
-                                    <span>(${seller.municipality?.department?.name})</span>
-                                    ${seller.locality ? '<span>' + seller.locality.name + '</span>' : ''}
+                                    <span>${municipality?.name}</span>${locality ? '<span> | ' + locality.name + '</span>' : ''}
+                                    <span>(${municipality?.department?.name})</span>
                                 </em>
                                 <span style="position: relative; flex-grow: 1;"></span>
                                 <span class="coords-icon" style="position: relative; margin-left: 5px; padding-left: 5px; color: ${infoColors.font}; text-align: right;">
@@ -251,23 +275,47 @@ export default class MapManager {
 
             const addCoordsTooltip = () => {
                 const coordsElement = Tooltip.clickTooltip.querySelector(".coords-icon")
-                console.log("holis")
                 if (coordsElement instanceof HTMLElement) {
                     const setCopyFunction = () => {
                         const button = Tooltip.coordsTooltip.getElementsByTagName("button")[0]
-                        console.log(button)
                         button.onclick = () => Button.copyText(button, `${seller.lat}, ${seller.lng}`)
                     }
-                    Tooltip.addCoordsTooltip(eventAdapter, coordsElement, returnCoordsHtml, (elementRect, tooltipRect) => [elementRect.x + elementRect.w, elementRect.y + elementRect.h], setCopyFunction)
+                    Tooltip.addCoordsTooltip(eventAdapter, coordsElement, returnCoordsHtml, setCopyFunction, (eventRect, tooltipRect) => [eventRect.x + eventRect.w, eventRect.y + eventRect.h])
                 }
             }
 
             const element = marker.element
 
-            Tooltip.addInTooltip(eventAdapter, element, returnInHTML, (elementRect, tooltipRect) => [elementRect.x + elementRect.w / 2, elementRect.y - elementRect.h])
+            Tooltip.addInTooltip(eventAdapter, element, returnInHTML, [], (eventRect, tooltipRect) => [eventRect.x + eventRect.w / 2, eventRect.y - eventRect.h - 5])
             Tooltip.addOutTooltip(eventAdapter, element)
-            Tooltip.addClickTooltip(eventAdapter, element, returnClickHTML, (elementRect, tooltipRect) => [elementRect.x + elementRect.w / 2, elementRect.y - elementRect.h - tooltipRect.h / 2], [() => Style.setSelectionColors(selectionColors), addCoordsTooltip])
+            Tooltip.addClickTooltip(eventAdapter, element, returnClickHTML, [() => Style.setSelectionColors(selectionColors), addCoordsTooltip], (elementRect, tooltipRect) => [elementRect.x + elementRect.w / 2, elementRect.y - elementRect.h - tooltipRect.h / 2])
         }
+    }
+
+    async setFeatureEvents(){
+
+        const eventAdapter = new MapEventAdapter()
+
+        const returnInHTML = (/** @type {MapFeature} */ feature) => {
+            const name = feature.getProperty("name")
+            return `
+                <span>${name}</span>
+            `
+        }
+
+        const showHover = (/** @type {MapEvent} */ event) => {
+            this.map.map.data.overrideStyle(event.feature, {
+                fillColor: '#ff0000',
+                strokeColor: '#ff0000'
+              });
+        }
+
+        const hideHover = (/** @type {MapEvent} */ event) => {
+            this.map.map.data.revertStyle(event.feature);
+        }
+
+        Tooltip.addInTooltip(eventAdapter, this.map.map.data, returnInHTML, showHover, (eventRect, tooltipRect) => [eventRect.x, eventRect.y])
+        Tooltip.addOutTooltip(eventAdapter, this.map.map.data, hideHover)
     }
 
 

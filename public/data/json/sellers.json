@@ -5,8 +5,7 @@
         "address": "Cra. XX #YY-ZZ",
         "lat": 11.002689878603764,
         "lng": -74.81448489302309,
-        "municipalityId": "08001",
-        "localityId": ""
+        "areaId": "08001"
     },
     {
         "id": "bucaramanga",
@@ -14,8 +13,7 @@
         "address": "Cra. XX #YY-ZZ",
         "lat": 7.126714307270854,
         "lng": -73.11446761061566,
-        "municipalityId": "68001",
-        "localityId": ""
+        "areaId": "68001"
     },
     {
         "id": "cali",
@@ -23,8 +21,7 @@
         "address": "Cra. XX #YY-ZZ",
         "lat": 3.452424382685351,
         "lng": -76.4931246763714,
-        "municipalityId": "76001",
-        "localityId": ""
+        "areaId": "76001"
     },
     {
         "id": "cartagena",
@@ -32,8 +29,7 @@
         "address": "Cra. XX #YY-ZZ",
         "lat": 10.420495819286762,
         "lng": -75.53385812286801,
-        "municipalityId": "13001",
-        "localityId": ""
+        "areaId": "13001"
     },
     {
         "id": "cucuta",
@@ -41,8 +37,7 @@
         "address": "Cra. XX #YY-ZZ",
         "lat": 7.89752044391865,
         "lng": -72.5062011718628,
-        "municipalityId": "54001",
-        "localityId": ""
+        "areaId": "54001"
     },
     {
         "id": "medellin",
@@ -50,8 +45,7 @@
         "address": "Cra. XX #YY-ZZ",
         "lat": 6.262431895656156,
         "lng": -75.56404755453853,
-        "municipalityId": "05001",
-        "localityId": ""
+        "areaId": "05001"
     },
     {
         "id": "monteria",
@@ -59,8 +53,7 @@
         "address": "Cra. XX #YY-ZZ",
         "lat": 8.751549528798737,
         "lng": -75.88373388085706,
-        "municipalityId": "23001",
-        "localityId": ""
+        "areaId": "23001"
     },
     {
         "id": "neiva",
@@ -68,8 +61,7 @@
         "address": "Cra. XX #YY-ZZ",
         "lat": 2.932486149243003,
         "lng": -75.28494502446691,
-        "municipalityId": "41001",
-        "localityId": ""
+        "areaId": "41001"
     },
     {
         "id": "pasto",
@@ -77,8 +69,7 @@
         "address": "Cra. XX #YY-ZZ",
         "lat": 1.222545892365123,
         "lng": -77.28277453386823,
-        "municipalityId": "52001",
-        "localityId": ""
+        "areaId": "52001"
     },
     {
         "id": "pereira",
@@ -86,8 +77,7 @@
         "address": "Cra. XX #YY-ZZ",
         "lat": 4.817888136171111,
         "lng": -75.69976105300874,
-        "municipalityId": "66001",
-        "localityId": ""
+        "areaId": "66001"
     },
     {
         "id": "sincelejo",
@@ -95,8 +85,7 @@
         "address": "Cra. XX #YY-ZZ",
         "lat": 9.303929148438568,
         "lng": -75.39277521496017,
-        "municipalityId": "70001",
-        "localityId": ""
+        "areaId": "70001"
     },
     {
         "id": "chapinero",
@@ -104,8 +93,7 @@
         "address": "Cra. XX #YY-ZZ",
         "lat": 4.633794896229732,
         "lng": -74.06733995774036,
-        "municipalityId": "11001",
-        "localityId": "1100102"
+        "areaId": "1100102"
     },
     {
         "id": "engativa",
@@ -113,8 +101,7 @@
         "address": "Cra. XX #YY-ZZ",
         "lat": 4.7070992225391795,
         "lng": -74.10950060822498,
-        "municipalityId": "11001",
-        "localityId": "1100110"
+        "areaId": "1100110"
     },
     {
         "id": "sancristobal",
@@ -122,8 +109,7 @@
         "address": "Cra. XX #YY-ZZ",
         "lat": 4.570360700521882,
         "lng": -74.0884026481501,
-        "municipalityId": "11001",
-        "localityId": "1100104"
+        "areaId": "1100104"
     },
     {
         "id": "kennedy",
@@ -131,8 +117,7 @@
         "address": "Cra. XX #YY-ZZ",
         "lat": 4.616406790731776,
         "lng": -74.15623608648288,
-        "municipalityId": "11001",
-        "localityId": "1100108"
+        "areaId": "1100108"
     },
     {
         "id": "valledupar",
@@ -140,7 +125,6 @@
         "address": "Cra. XX #YY-ZZ",
         "lat": 10.47088147604149,
         "lng": -73.2538037172899,
-        "municipalityId": "20001",
-        "localityId": ""
+        "areaId": "20001"
     }
 ]

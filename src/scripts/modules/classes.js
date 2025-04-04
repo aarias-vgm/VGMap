@@ -160,10 +160,8 @@ export class Hospital extends Place {
     complexity
     /** @type {string} */
     services
-    /** @type {Municipality} */
-    municipality
-    /** @type {Locality?} */
-    locality
+    /** @type {(Municipality | Locality)?} */
+    area
     /** @type {Seller?} */
     seller
 
@@ -182,9 +180,7 @@ export class Hospital extends Place {
         this.nit = nit
         this.complexity = complexity
         this.services = services
-        // @ts-ignore
-        this.municipality = undefined
-        this.locality = null
+        this.area = null
         this.seller = null
     }
 }
@@ -193,14 +189,13 @@ export class Seller extends Place {
 
     /** @type {string} */
     address
-    /** @type {Municipality?} */
-    municipality
-    /** @type {Locality?} */
-    locality
     /** @type {Hospital[]} */
     hospitals
+    /** @type {(Municipality | Locality)?} */
+    area
     /** @type {(Municipality | Locality)[]} */
     areas
+
 
     /**
      * 
@@ -213,9 +208,8 @@ export class Seller extends Place {
     constructor(id, name, address, lat, lng) {
         super(name, lat, lng, id)
         this.address = address
-        this.municipality = null
-        this.locality = null
         this.hospitals = []
+        this.area = null
         this.areas = []
     }
 }

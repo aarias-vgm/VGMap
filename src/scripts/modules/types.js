@@ -14,11 +14,11 @@
  * @callback TooltipHandler
  * @param {any} event
  * @returns {any}
-*/
+ */
 
 /**
  * @typedef {"in" | "out" | "click" | "move"} EventType
-*/
+ */
 
 // HTML
 
@@ -29,7 +29,17 @@
 // Map
 
 /**
- * @typedef {{ [signature: string]: string | google.maps.TravelMode | { text: string, value: number }, travelMode: google.maps.TravelMode, distance: { text: string, value: number }, duration: { text: string, value: number } }} DistanceResult
+ * @typedef {Object} Distance
+ * @property {{ text: string, value: number }} distance
+ * @property {{ text: string, value: number }} duration
+ */
+
+/**
+ * @typedef {Object} DistanceLine
+ * @property {string} place1Id
+ * @property {string} place2Id
+ * @property {google.maps.TravelMode} travelMode
+ * @property {Distance} distance  // or perhaps this should be just Distance
  */
 
 /**

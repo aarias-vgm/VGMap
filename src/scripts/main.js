@@ -2,6 +2,10 @@ import { Department, Municipality, Hospital, Seller, Locality } from "./modules/
 import MapManager from "./modules/mapManager.js"
 import Files from "./modules/files.js"
 
+/**
+ * @typedef {import('./modules/types.js').DistanceLine} DistanceLine
+ */
+
 async function run() {
 
     const departmentsDict = await loadDepartmentsDict()
@@ -12,9 +16,9 @@ async function run() {
 
     const areasDict = createAreasDict(municipalitiesDict)
 
-    const hospitalsDict = await loadHospitalsDict(municipalitiesDict)
+    const hospitalsDict = await loadHospitalsDict(municipalitiesDict, localitiesDict)
 
-    const sellersDict = await loadSellersDict()
+    const sellersDict = await loadSellersDict(areasDict)
 
     const excludedDepartments = [
         "85", // Casanare
@@ -70,25 +74,25 @@ async function run() {
     //         return accumulator;
     //     }, {});
 
-    // for (const [departmentId, department] of Object.entries(departmentsDict)) {
-    //     mapManager.addGeoJSON(`geojson/departments/${departmentId}.geojson`)
-    // }
+    for (const [departmentId, department] of Object.entries(departmentsDict)) {
+        mapManager.addGeoJSON(`geojson/departments/${departmentId}.geojson`)
+    }
 
     const box = document.getElementById("box")
 
-    mapManager.map.map.data.setStyle({
-        zIndex: 0,
-        clickable: false,
-    })
+    // mapManager.map.map.data.setStyle({
+    //     zIndex: 0,
+    //     clickable: false,
+    // })
 
-    if (box) {
-        // mapManager.map.map.data.addListener("mouseover", (/** @type {google.maps.Data.MouseEvent} */ event) => {
-        //     event.domEvent.stopPropagation()
-        //     box.style.left = event.domEvent.clientX + "px";
-        //     box.style.top =  event.domEvent.clientY + "px";
-        //     box.style.display = "block";
-        // });
-    }
+    // if (box) {
+    // mapManager.map.map.data.addListener("mouseover", (/** @type {google.maps.Data.MouseEvent} */ event) => {
+    //     event.domEvent.stopPropagation()
+    //     box.style.left = event.domEvent.clientX + "px";
+    //     box.style.top =  event.domEvent.clientY + "px";
+    //     box.style.display = "block";
+    // });
+    // }
 
     // mapManager.addGeoJSON(`geojson/departments/11.geojson`)
 
@@ -125,18 +129,25 @@ async function run() {
         sellerColors[sellers[i].id] = availableColors[i % availableColors.length - 1]
     }
 
-    for (const hospital of Object.values(hospitalsDict).slice(0, 20)) {
-        await mapManager.createHospitalMarker(hospital)
-    }
+    await mapManager.setFeatureEvents()
+
+    // for (const hospital of Object.values(hospitalsDict).slice(0, 20)) {
+    //     await mapManager.createHospitalMarker(hospital)
+    // }
 
     // console.log(sellers)
 
     // Evento para mostrar el menú con click derecho
-    // mapManager.map.googleMap.addListener("rightclick", (event) => {
-    //     lastClickedCoords = { lat: event.latLng.lat(), lng: event.latLng.lng() };
-    //     contextMenu.style.left = event.pixel.x + "px";
-    //     contextMenu.style.top = event.pixel.y + "px";
-    //     contextMenu.style.display = "block";
+    // mapManager.map.map.addListener("rightclick", (event) => {
+        // lastClickedCoords = { lat: event.latLng.lat(), lng: event.latLng.lng() };
+        // contextMenu.style.left = event.pixel.x + "px";
+        // contextMenu.style.top = event.pixel.y + "px";
+        // contextMenu.style.display = "block";
+        // mapManager.map.map.data.setStyle((feature) => {
+        //     return {
+        //         fillColor: "#ff0000"
+        //     }
+        // })
     // });
 
     // for (const [areaId, area] of Object.entries(areasDict)) {
@@ -357,6 +368,8 @@ async function loadMunicipalitiesDict(departmentsDict = null) {
             if (department) {
                 municipality.department = department
                 department.municipalities.push(municipality)
+            } else {
+                console.error(`Department ${line[cols["departmentId"]]} not found: Municipality ID ${municipality.id}`)
             }
         }
 
@@ -397,6 +410,8 @@ async function loadLocalitiesDict(municipalitiesDict) {
             if (municipality) {
                 locality.municipality = municipality
                 municipality.localities.push(locality)
+            } else {
+                console.error(`Municipality ${line[cols["municipalityId"]]} not found: Locality ID ${locality.id}`)
             }
         }
 
@@ -412,7 +427,7 @@ async function loadLocalitiesDict(municipalitiesDict) {
  * @param {Object<string, Locality>?} localitiesDict 
  * @returns {Promise<Object<string, Hospital>>}
  */
-async function loadHospitalsDict(municipalitiesDict = null, localitiesDict = null) {
+async function loadHospitalsDict(municipalitiesDict, localitiesDict) {
     const lines = (await Files.loadTextFile("psv/hospitals.psv")).split("\n")
 
     const cols = Files.getColsNames(lines[0].split("|"))
@@ -433,20 +448,17 @@ async function loadHospitalsDict(municipalitiesDict = null, localitiesDict = nul
         )
 
         if (municipalitiesDict) {
-            let municipality = municipalitiesDict[line[cols["municipalityId"]]]
-
-            if (municipality) {
-                hospital.municipality = municipality
-                municipality.hospitals.push(hospital)
-
-                if (localitiesDict) {
-                    let locality = localitiesDict[line[cols["localityId"]]]
-
-                    if (locality) {
-                        hospital.locality = locality
-                    }
-                }
+            const municipality = municipalitiesDict[line[cols["municipalityId"]]]
+            if (municipality?.localities.length > 0 && localitiesDict) {
+                const locality = localitiesDict[line[cols["localityId"]]]
+                hospital.area = locality
+            } else {
+                hospital.area = municipality
             }
+        }
+
+        if (!hospital.area) {
+            console.error(`Area ${line[cols["areaId"]]} not found: Municipality ID ${line[cols["municipalityId"]]}, Locality ID ${line[cols["localityId"]]}`)
         }
 
         hospitalsDict[hospital.id] = hospital
@@ -456,11 +468,10 @@ async function loadHospitalsDict(municipalitiesDict = null, localitiesDict = nul
 }
 
 /**
- * @param {Object<string, Municipality>?} municipalitiesDict 
- * @param {Object<string, Locality>?} localitiesDict 
+ * @param {Object<string, Municipality | Locality>?} areasDict 
  * @returns {Promise<Object<string, Seller>>}
  */
-async function loadSellersDict(municipalitiesDict = null, localitiesDict = null) {
+async function loadSellersDict(areasDict = null) {
 
     const objects = await Files.loadJSONFile("json/sellers.json")
 
@@ -472,20 +483,12 @@ async function loadSellersDict(municipalitiesDict = null, localitiesDict = null)
 
             const seller = new Seller(object["id"], object["name"], object["address"], object["lat"], object["lng"])
 
-            if (municipalitiesDict) {
-                let municipality = municipalitiesDict[object["municipalityId"]]
-
-                if (municipality) {
-                    seller.municipality = municipality
-
-                    if (localitiesDict) {
-                        let locality = localitiesDict[object["localityId"]]
-
-                        if (locality) {
-                            seller.locality = locality
-                            seller.locality.municipality = municipality
-                        }
-                    }
+            if (areasDict) {
+                const area = areasDict[object["areaId"]]
+                if (area) {
+                    seller.area = area
+                } else {
+                    console.error(`Area ${object["areaId"]} not found: Seller ID ${seller.id}`)
                 }
             }
 
@@ -526,49 +529,65 @@ async function assignHospitalsToSellers(hospitalsDict, sellersDict) {
     if (reader) {
         const decoder = new TextDecoder("utf-8");
 
-        let currentPlace1Id = ""
+        let currentHospital1Id = ""
         let partialLine = "";
 
         let distancesObject = Object.create(null)
 
-        const processLine = (/** @type {Object<string, number>}>} */ distancesObject, /** @type {string} */ line) => {
+        let firstTime = true
+        let secondsTime = true
+
+        const processLine = (/** @type {Object<string, number>}>} */ distancesDict, /** @type {string} */ line) => {
             try {
-                const distance = JSON.parse(line);
-                const hospital = hospitalsDict[distance["hospital"]]
-                const seller = sellersDict[distance["seller"]]
+                /** @type {DistanceLine}>} */
+                const distanceLine = JSON.parse(line);
+                // @ts-ignore
+                const hospital = hospitalsDict[distanceLine["hospital"]]
+                // @ts-ignore
+                const seller = sellersDict[distanceLine["seller"]]
 
-                if (!currentPlace1Id) {
-                    currentPlace1Id = hospital.id
+                if (!currentHospital1Id) {
+                    currentHospital1Id = hospital.id
                 } else {
-                    if (currentPlace1Id == hospital.id) {
-
-                        distancesObject[seller.id] = distance.duration.value
+                    if (currentHospital1Id == hospital.id) {
+                        // distancesDict[seller.id] = distanceLine.duration.value
                     } else {
+                        if (firstTime){
+                            console.log(currentHospital1Id)
+                            console.log(distancesDict)
+                            firstTime = false
+                        } else {
+                            if (secondsTime){
+                                console.log(currentHospital1Id)
+                                console.log(distancesDict)
+                                secondsTime = false
+                            }
+                        }
                         let minDistance = Number.MAX_VALUE
                         let minDistanceSellerId = ""
 
-                        for (const [sellerId, distance] of Object.entries(distancesObject)) {
+                        for (const [sellerId, distance] of Object.entries(distancesDict)) {
                             if (distance < minDistance) {
                                 minDistance = distance
                                 minDistanceSellerId = sellerId
                             }
                         }
 
-                        if (minDistance <= 14400) {
-                            const currentHospital = hospitalsDict[currentPlace1Id]
-                            const currentSeller = sellersDict[minDistanceSellerId]
+                        // if (minDistance <= 14400) {
+                        const currentHospital = hospitalsDict[currentHospital1Id]
+                        const currentSeller = sellersDict[minDistanceSellerId]
 
-                            currentHospital.seller = currentSeller
-                            currentSeller.hospitals.push(currentHospital)
+                        currentHospital.seller = currentSeller
+                        currentSeller.hospitals.push(currentHospital)
 
-                            if (currentHospital.municipality.department.name === "Atlántico") {
-                                console.log("En Barranquilla me quedo. :v")
-                            }
-                        }
+                        // if (currentHospital.municipality.department.name === "Atlántico") {
+                        //     console.log("En Barranquilla me quedo. :v")
+                        // }
+                        // }
 
-                        currentPlace1Id = hospital.id
+                        currentHospital1Id = hospital.id
 
-                        distancesObject = Object.create(null)
+                        distancesDict = Object.create(null)
                     }
                 }
             } catch (error) {
@@ -604,8 +623,6 @@ async function assignHospitalsToSellers(hospitalsDict, sellersDict) {
             processLine(distancesObject, finalLine)
         }
     }
-
-    console.log(sellersDict)
 }
 
 /**
@@ -617,8 +634,10 @@ async function searchHospitals(mapManager, hospitalsDict) {
     const searchedHospitals = []
 
     for (const hospital of Object.values(hospitalsDict)) {
-        const searchedHospital = await mapManager.map.getNearbyPlace(hospital.name, hospital.municipality, "hospital")
-        searchedHospitals.push(searchedHospital)
+        if (hospital.area) {
+            const searchedHospital = await mapManager.map.getNearbyPlace(hospital.name, hospital.area, "hospital")
+            searchedHospitals.push(searchedHospital)
+        }
     }
 
     return searchHospitals
