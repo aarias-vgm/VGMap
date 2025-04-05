@@ -3,6 +3,9 @@ import MapManager from "./modules/mapManager.js"
 import Files from "./modules/files.js"
 
 /**
+ * @typedef {import('./modules/types.js').Color} Color
+ * @typedef {import('./modules/types.js').MapEvent} MapEvent
+ * @typedef {import('./modules/types.js').MapFeature} MapFeature
  * @typedef {import('./modules/types.js').DistanceLine} DistanceLine
  */
 
@@ -44,272 +47,112 @@ async function run() {
     await assignHospitalsToSellers(hospitalsDict, sellersDict)
     await assignAreasToSellers(areasDict, sellersDict)
 
-    // let sum = 0
-    // for (const seller of Object.values(sellersDict)) {
-    //     sum += seller.hospitals.length
-    //     console.log(seller.hospitals)
-    // }
-    // console.log(sum)
-    // assignSellersToMunicipalities(municipalitiesDict, sellersDict, excludedDepartments)
+    console.log(sellersDict)
 
-    // hospitalsDict = Object.entries(hospitalsDict)
-    //     .filter(([id, hospital]) => hospital.complexity == 1)
-    //     .reduce((/** @type {Dict} */ accumulator, [id, valor]) => {
-    //         accumulator[id] = valor;
-    //         return accumulator;
-    //     }, {});
-
-    // const municipalitiesWithHospitals = []
-    // for (const municipality of Object.values(municipalitiesDict)){
-    //     if (municipality.hospitals.length > 0){
-    //         municipalitiesWithHospitals.push(municipality.id)
-    //     }
+    // for (const [departmentId, department] of Object.entries(departmentsDict)) {
+    //     mapManager.addGeoJSON(`geojson/departments/${departmentId}.geojson`)
     // }
 
-    // hospitalsDict = Object.entries(hospitalsDict)
-    //     .filter(([id, hospital]) =>
-    //         validMunicipalities.includes(hospital.municipality?.id)
-    //     )
-    //     .reduce((/** @type {Dict} */ accumulator, [id, valor]) => {
-    //         accumulator[id] = valor;
-    //         return accumulator;
-    //     }, {});
-
-    for (const [departmentId, department] of Object.entries(departmentsDict)) {
-        mapManager.addGeoJSON(`geojson/departments/${departmentId}.geojson`)
+    for (const [areaId, area] of Object.entries(areasDict)) {
+        if (area instanceof Municipality) {
+            mapManager.addGeoJSON(`geojson/municipalities/${areaId}.geojson`)
+        } else if (area instanceof Locality) {
+            mapManager.addGeoJSON(`geojson/localities/${areaId}.geojson`)
+        }
     }
 
-    const box = document.getElementById("box")
-
-    // mapManager.map.map.data.setStyle({
-    //     zIndex: 0,
-    //     clickable: false,
-    // })
-
-    // if (box) {
-    // mapManager.map.map.data.addListener("mouseover", (/** @type {google.maps.Data.MouseEvent} */ event) => {
-    //     event.domEvent.stopPropagation()
-    //     box.style.left = event.domEvent.clientX + "px";
-    //     box.style.top =  event.domEvent.clientY + "px";
-    //     box.style.display = "block";
-    // });
-    // }
-
-    // mapManager.addGeoJSON(`geojson/departments/11.geojson`)
-
-    // mapManager.addGeoJSON(`geojson/municipalities/${municipalitiesDict[municipalityWithHospital.id].id}.geojson`)
-
-    // for (const hospital of Object.values(hospitalsDict)) {
-    //     if (hospital.municipality && hospital.municipality.id == municipalityWithHospital.id){
-    //         await mapManager.createHospitalMarker(hospital)
-    //     }
-    // }
-
+    /** @type {Color[]} */
     const availableColors = [
-        "#003566",
-        "#005F73",
-        "#0A9396",
-        "#94D2BD",
-        "#E9D8A6",
-        "#ffffff",
-        "#ffc300",
-        "#EE9B00",
-        "#CA6702",
-        "#BB3E03",
-        "#AE2012",
-        "#9B2226",
-        "#890815",
+        {normal: "#003566", hover: "#004789"},
+        {normal: "#005F73", hover: "#007c96"},
+        {normal: "#0A9396", hover: "#0cb3b7"},
+        {normal: "#94D2BD", hover: "#addccc"},
+        {normal: "#E9D8A6", hover: "#f0e4c2"},
+        {normal: "#ffffff", hover: "#e5e5e5"},
+        {normal: "#ffc300", hover: "#ffcb23"},
+        {normal: "#EE9B00", hover: "#ffac12"},
+        {normal: "#CA6702", hover: "#ed7902"},
+        {normal: "#BB3E03", hover: "#de4903"},
+        {normal: "#AE2012", hover: "#ce2515"},
+        {normal: "#9B2226", hover: "#b8282d"},
+        {normal: "#890815", hover: "#aa091a"},
     ]
-
-    const sellerColors = Object.create(null)
+    
+    /** @type {{[sellerId: string]: Color}} */
+    const sellersColors = Object.create(null)
 
     const sellers = Object.values(sellersDict)
 
-    let sum = 0
-
     for (let i = 0; i < sellers.length; i++) {
         await mapManager.createSellerMarker(sellers[i])
-        sellerColors[sellers[i].id] = availableColors[i % availableColors.length - 1]
-        const count = sellers[i].hospitals.length
-        console.log(count)
-        sum += count
+        sellersColors[sellers[i].id] = availableColors[i % availableColors.length - 1]
     }
 
-    await mapManager.setFeatureEvents()
+    mapManager.map.map.data.setStyle((/** @type {MapFeature} */ feature) => {
+        let fillColor = "";
+        let hoverColor = "";
 
-    // for (const hospital of Object.values(hospitalsDict).slice(0, 20)) {
-    //     await mapManager.createHospitalMarker(hospital)
-    // }
+        const areaId = feature.getId();
+        if (areaId) {
+            const area = areasDict[areaId];
+            if (area) {
+                const department = area instanceof Municipality ? area.department : area.municipality.department;
 
-    // Evento para mostrar el menú con click derecho
-    // mapManager.map.map.addListener("rightclick", (event) => {
-    // lastClickedCoords = { lat: event.latLng.lat(), lng: event.latLng.lng() };
-    // contextMenu.style.left = event.pixel.x + "px";
-    // contextMenu.style.top = event.pixel.y + "px";
-    // contextMenu.style.display = "block";
-    // mapManager.map.map.data.setStyle((feature) => {
-    //     return {
-    //         fillColor: "#ff0000"
-    //     }
-    // })
+                if (!excludedDepartments.includes(department.id)) {
+                    const seller = area.seller;
+                    if (seller) {
+                        fillColor = sellersColors[seller.id].normal || "";
+                        hoverColor = sellersColors[seller.id].hover || "";
+                        feature.setProperty("state", "ASIGNADO");
+                    } else {
+                        fillColor = "gainsboro";
+                        hoverColor = "lightgray";
+                        feature.setProperty("state", "INACCESIBLE");
+                    }
+                } else {
+                    fillColor = "#070D0D";
+                    hoverColor = "#000000";
+                    feature.setProperty("state", "EXCLUIDO");
+                }
+            }
+        }
+
+        // Guardar los colores en el feature para luego usarlos en los eventos
+        feature.setProperty("fillColor", fillColor);
+        feature.setProperty("hoverColor", hoverColor);
+
+        return {
+            fillColor: fillColor,
+            fillOpacity: 1,
+            strokeColor: hoverColor,
+            strokeWeight: 1,
+            strokeOpacity: 1
+        };
+    });
+
+
+    mapManager.map.map.data.addListener("mouseover", (/** @type {MapEvent} */ event) => {
+        const feature = event.feature;
+        const hoverColor = feature.getProperty("hoverColor");
+        mapManager.map.map.data.overrideStyle(feature, { fillColor: hoverColor });
+        event.domEvent.stopPropagation();
+    });
+
+    mapManager.map.map.data.addListener("mouseout", (/** @type {MapEvent} */ event) => {
+        const feature = event.feature;
+        mapManager.map.map.data.revertStyle(feature);
+    });
+
+
+    // map.data.addListener("click", (event) => {
+    //     map.data.forEach((feature) => {
+    //         feature.setProperty("isSelected", false)
+    //     });
+    //     lastFeature = event.feature
+    //     lastFeature.setProperty("isSelected", true);
     // });
 
-    // for (const [areaId, area] of Object.entries(areasDict)) {
-    //     if (area instanceof Municipality) {
-    //         if (!area.localities.length) {
-    //             await mapManager.addGeoJSON(`geojson/municipalities/${areaId}.geojson`)
-    //         }
-    //     } else {
-    //         await mapManager.addGeoJSON(`geojson/localities/${areaId}.geojson`)
-    //     }
-    // }
-
-    // mapManager.map.map.data.setStyle((feature) => {
-
-    //     let areaId = ""
-
-    //     try {
-    //         areaId = feature.getId()
-    //     } catch (error) {
-    //         console.error(areaId)
-    //     }
-
-    //     let fillColor = "#000000"
-
-    //     // @ts-ignore
-    //     if (areaId) {
-    //         const area = areasDict[areaId]
-    //         if (area) {
-    //             let departmentId
-    //             if (area instanceof Municipality) {
-    //                 departmentId = area.department.id
-    //             } else if (area instanceof Locality) {
-    //                 departmentId = area.municipality.department.id
-    //             }
-
-    //             // @ts-ignore
-    //             if (excludedDepartments.includes(departmentId)) {
-    //                 fillColor = "#ff0000"
-    //             } else {
-    //                 fillColor = sellerColors[area.seller?.id]
-    //             }
-    //         }
-    //     } else {
-    //         console.log(feature)
-    //     }
-
-    //     return {
-    //         fillColor: fillColor,
-    //         fillOpacity: 1,
-    //         strokeColor: "white",
-    //         strokeWeight: 2,
-    //         strokeOpacity: 1
-    //     };
-    // })
-
-    // mapManager.map.map.data.setStyle((feature) => {
-    //     const municipalityId = String(feature.getProperty("id"))
-
-    //     const seller = municipalitiesDict[municipalityId].seller
-
-    //     let fillColor = ""
-
-    //     if (seller){
-    //         console.log(seller.id)
-    //         fillColor = sellerColors[seller.id]
-    //     } else {
-    //         console.log("NO")
-    //         fillColor = "#000000"
-    //     }
-
-    //     return {
-    //         fillColor: fillColor,
-    //         fillOpacity: 1,
-    //         strokeColor: "white",
-    //         strokeWeight: 2,
-    //         strokeOpacity: 1
-    //     };
-    // });
-
-    //     let contextMenu;
-    //     // @ts-ignore
-    //     let lastClickedCoords;
-    // contextMenu = document.getElementById("coord-button");
-    // if (contextMenu){
-
-    // contextMenu.style.position = "absolute";
-    // contextMenu.style.display = "flex";
-    // contextMenu.style.background = "#fff";
-    // contextMenu.style.padding = "8px";
-    // contextMenu.style.border = "1px solid #ccc";
-    // contextMenu.style.boxShadow = "2px 2px 10px rgba(0,0,0,0.3)";
-    // contextMenu.style.borderRadius = "5px";
-    // document.body.appendChild(contextMenu);
-
-    // // Agregar botón de copiar
-    // const copyBtn = document.createElement("button");
-    // copyBtn.innerText = "Copiar Coordenadas";
-    // copyBtn.style.cursor = "pointer";
-    // copyBtn.style.padding = "5px 10px";
-    // copyBtn.style.border = "none";
-    // copyBtn.style.background = "#007bff";
-    // copyBtn.style.color = "#fff";
-    // copyBtn.style.borderRadius = "3px";
-
-    // copyBtn.onclick = () => {
-    //     if (lastClickedCoords) {
-    //         console.log("copied")
-    //         const text = `${lastClickedCoords.lat}, ${lastClickedCoords.lng}`;
-    //         navigator.clipboard.writeText(text)
-    //             .then(() => {
-    //                 setTimeout(() => copyBtn.blur(), 10);
-    //                 setTimeout(() => copyBtn.focus(), 10);
-    //             })
-    //             .catch((error) => {
-    //                 console.error(`Could not copy text: ${error}`);
-    //             });
-    //     }
-    //     contextMenu.style.display = "none"; // Ocultar después de copiar
-    // };
-
-    // contextMenu.appendChild(copyBtn);
-    // }
-
-
-    // Evento para mostrar el menú con click derecho
-    // mapManager.map.googleMap.addListener("rightclick", (event) => {
-    //     lastClickedCoords = { lat: event.latLng.lat(), lng: event.latLng.lng() };
-    //     contextMenu.style.left = event.pixel.x + "px";
-    //     contextMenu.style.top = event.pixel.y + "px";
-    //     contextMenu.style.display = "block";
-    // });
-
-    // // Cerrar menú si se hace click en otro lado
-    // mapManager.map.googleMap.addListener("click", () => {
-    //     contextMenu.style.display = "none";
-    // });
-
-    // mapManager.map.googleMap.data.addListener("rightclick", (event) => {
-    //     if (event.feature) {
-    //         const geometry = event.feature.getGeometry();
-
-    //         if (geometry.getType() === "Polygon" || geometry.getType() === "MultiPolygon") {
-    //             // Si el departamento es un polígono, usamos el primer punto
-    //             const firstCoord = geometry.getAt(0).getAt(0);
-    //             lastClickedCoords = { lat: firstCoord.lat(), lng: firstCoord.lng() };
-    //         } else if (geometry.getType() === "Point") {
-    //             // Si es un punto, tomamos sus coordenadas directamente
-    //             lastClickedCoords = { lat: geometry.get().lat(), lng: geometry.get().lng() };
-    //         }
-
-    //         console.log(event)
-
-    //         // Mostrar el menú en la posición del click
-    //         contextMenu.style.left = event.latLng.lat()
-    //         contextMenu.style.top = event.latLng.lng()
-    //         contextMenu.style.display = "block";
-    //     }
-    // });
+    // await mapManager.setFeatureEvents()
 }
 
 /**
@@ -451,14 +294,11 @@ async function loadHospitalsDict(municipalitiesDict, localitiesDict) {
             Number(line[cols["lng"]])
         )
 
-        if (municipalitiesDict) {
-            const municipality = municipalitiesDict[line[cols["municipalityId"]]]
-            if (municipality?.localities.length > 0 && localitiesDict) {
-                const locality = localitiesDict[line[cols["localityId"]]]
-                hospital.area = locality
-            } else {
-                hospital.area = municipality
-            }
+        const area = (localitiesDict && localitiesDict[line[cols["localityId"]]]) || (municipalitiesDict && municipalitiesDict[line[cols["municipalityId"]]]);
+
+        if (area) {
+            hospital.area = area;
+            hospital.area.hospitals.push(hospital);
         }
 
         if (!hospital.area) {
@@ -527,6 +367,7 @@ function createAreasDict(municipalitiesDict) {
  * @param {Object<string, Seller>} sellersDict
  */
 async function assignHospitalsToSellers(hospitalsDict, sellersDict) {
+
     const response = await fetch("./public/data/ndjson/distancesDrivingHospitalToSeller.ndjson");
 
     const reader = response.body?.getReader();
@@ -538,10 +379,11 @@ async function assignHospitalsToSellers(hospitalsDict, sellersDict) {
             try {
                 /** @type {DistanceLine} */
                 const distanceLine = JSON.parse(line);
+
                 // @ts-ignore
-                const hospital = hospitalsDict[distanceLine["hospital"]];
+                const hospital = hospitalsDict[distanceLine["hospital"]]; // @ts-ignore
                 // @ts-ignore
-                const seller = sellersDict[distanceLine["seller"]];
+                const seller = sellersDict[distanceLine["seller"]]; // @ts-ignore
 
                 if (!hospitalId) {
                     hospitalId = hospital.id;
@@ -565,6 +407,7 @@ async function assignHospitalsToSellers(hospitalsDict, sellersDict) {
                     currentSeller.hospitals.push(currentHospital);
 
                     hospitalId = hospital.id
+
                     distancesDict = { [seller.id]: distanceLine.duration.value }
                 } else {
                     distancesDict[seller.id] = distanceLine.duration.value;
@@ -611,6 +454,67 @@ async function assignHospitalsToSellers(hospitalsDict, sellersDict) {
             processLine(true)
         }
     }
+}
+
+/**
+ * 
+ * @param {Object<string, Municipality | Locality>} areasDict 
+ * @param {Object<string, Seller>} sellersDict 
+ */
+async function assignAreasToSellers(areasDict, sellersDict) {
+    const unassignedAreasDict = Object.create(null)
+    for (const area of Object.values(areasDict)) {
+        if (area.hospitals.length > 0) {
+            const seller = await assignSellerByHospitalNumber(area, sellersDict)
+            if (seller) {
+                area.seller = seller
+                seller.areas.push(area)
+            }
+        } else {
+            unassignedAreasDict[area.id] = area
+        }
+    }
+
+    // await assignSellersByHospitalDistance(unassignedAreasDict)
+}
+
+/**
+ * 
+ * @param {Municipality | Locality} area 
+ * @param {Object<string, Seller>} sellersDict 
+ * @returns {Promise<Seller>}
+ */
+async function assignSellerByHospitalNumber(area, sellersDict) {
+    let maxHospitalsNumber = 0
+    let maxHospitalsSeller = ""
+
+    const hospitalsQuantity = Object.create(null)
+
+    for (const hospital of area.hospitals) {
+        if (hospital.seller) {
+            if (!hospitalsQuantity[hospital.seller.id]) {
+                hospitalsQuantity[hospital.seller.id] = 0
+            }
+
+            hospitalsQuantity[hospital.seller.id] += 1
+
+            if (maxHospitalsNumber < hospitalsQuantity[hospital.seller.id]) {
+                maxHospitalsNumber = hospitalsQuantity[hospital.seller.id]
+                maxHospitalsSeller = hospital.seller.id
+            }
+        }
+    }
+
+    return sellersDict[maxHospitalsSeller]
+}
+
+/**
+ * 
+ * @param {Object<string, Municipality | Locality>} unassignedAreasDict
+ * @param {Object<string, Seller>} sellersDict 
+ */
+async function assignSellersByHospitalDistance(unassignedAreasDict, sellersDict) {
+
 }
 
 /**
