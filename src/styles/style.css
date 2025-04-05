@@ -30,8 +30,16 @@ p {
     font-size: 0.8rem;
 }
 
+lrg {
+    font-size:  0.75rem;
+}
+
+med {
+    font-size:  0.7rem;
+}
+
 small {
-    font-size: 0.65rem;
+    font-size:  0.65rem;
 }
 
 @media (min-width: 1200px) {
