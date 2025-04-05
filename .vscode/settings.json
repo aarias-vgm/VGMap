@@ -1,40 +1,6 @@
 {
-    "files.associations": {
-        "*.psv": "psv (pipe)"
-    },
-    "todohighlight.keywords": [
-        {
-            "text": "[x]",
-            "color": "Gainsboro",
-            "backgroundColor": "rgba(0,255,255,0.25)",
-            "overviewRulerColor": "turquoise",
-            "isWholeLine": true,
-        },
-        {
-            "text": "[-]",
-            "color": "#FF5733  ",
-            "backgroundColor": "rgba(255, 0, 0, 0.6)",
-            "overviewRulerColor": "red",
-            "isWholeLine": true
-        },
-        {
-            "text": "[?]",
-            "color": "rgba(255,255,0,1)",
-            "backgroundColor": "rgba(255,215,0,0.65)",
-            "overviewRulerColor": "yellow",
-            "isWholeLine": true,
-        },
-        {
-            "text": "[!]",
-            "color": "#c2e6be",
-            "backgroundColor": "rgb(50, 205, 50, 0.75)",
-            "overviewRulerColor": "limeGreen",
-            "isWholeLine": true,
-        },
-    ],
-    "editor.dragAndDrop": true,
-    "cSpell.checkLimit": 1000,
     "cSpell.allowCompoundWords": true,
+    "cSpell.checkLimit": 1000,
     "cSpell.words": [
         "Adelita",
         "Alejandría",
@@ -198,9 +164,43 @@
         "Yumbo",
         "Zipaquirá"
     ],
+    "editor.dragAndDrop": false,
+    "files.associations": {
+        "*.psv": "psv (pipe)"
+    },
+    "livePreview.autoRefreshPreview": "Never",
     "liveServer.settings.ignoreFiles": [
         "**/*"
     ],
-    "livePreview.autoRefreshPreview": "Never",
-    "liveServer.settings.useLocalIp": true
+    "liveServer.settings.useLocalIp": true,
+    "todohighlight.keywords": [
+        {
+            "backgroundColor": "rgba(0,255,255,0.25)",
+            "color": "Gainsboro",
+            "isWholeLine": true,
+            "overviewRulerColor": "turquoise",
+            "text": "[x]"
+        },
+        {
+            "backgroundColor": "rgba(255, 0, 0, 0.6)",
+            "color": "#FF5733  ",
+            "isWholeLine": true,
+            "overviewRulerColor": "red",
+            "text": "[-]"
+        },
+        {
+            "backgroundColor": "rgba(255,215,0,0.65)",
+            "color": "rgba(255,255,0,1)",
+            "isWholeLine": true,
+            "overviewRulerColor": "yellow",
+            "text": "[?]"
+        },
+        {
+            "backgroundColor": "rgb(50, 205, 50, 0.75)",
+            "color": "#c2e6be",
+            "isWholeLine": true,
+            "overviewRulerColor": "limeGreen",
+            "text": "[!]"
+        }
+    ]
 }
