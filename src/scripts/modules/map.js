@@ -123,7 +123,7 @@ export default class Map {
 
         icon.innerHTML = `
             <div name="${element.name}" lat="${element.lat}" lng="${element.lng}">
-                <i class="fa ${faIcon} fa-2xl"></i> 
+                <i class="fa ${faIcon} fa-xl"></i> 
             </div>
         `
 
@@ -133,7 +133,7 @@ export default class Map {
             background: pinColor.background,
             borderColor: pinColor.border,
             glyphColor: pinColor.glyph,
-            scale: 1.3,
+            scale: 1,
         });
 
         // @ts-ignore

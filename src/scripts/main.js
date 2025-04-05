@@ -37,21 +37,31 @@ async function run() {
     await mapManager.map.importPinElement()
     await mapManager.map.importAdvancedMarkerElement()
 
-    // await mapManager.map.importDistanceService()
-    // await mapManager.map.importGeocoderService()
+    await mapManager.map.importDistanceService()
+    await mapManager.map.importGeocoderService()
 
     // await mapManager.calculatePlacesDistances(departmentsDict, departmentsDict, google.maps.TravelMode.DRIVING, true)
     //await mapManager.calculatePlacesDistances(hospitalsDict, sellersDict, google.maps.TravelMode.DRIVING, true)
-    // await mapManager.calculatePlacesDistances(hospitalsDict, areasDict, google.maps.TravelMode.DRIVING, true)
+    // await mapManager.calculatePlacesDistances(hospitalsDict, areasDict, google.maps.TravelMode.DRIVING, false)
+    // await mapManager.calculatePlacesDistances(hospitalsDict, localitiesDict, google.maps.TravelMode.DRIVING, false)
 
     await assignHospitalsToSellers(hospitalsDict, sellersDict)
-    await assignAreasToSellers(areasDict, sellersDict)
+    await assignSellersToAreas(areasDict, sellersDict, hospitalsDict)
 
-    console.log(sellersDict)
+    // let counter = 0
+    // for (const area of Object.values(areasDict)){
+    //     if (!area.seller){
+    //         counter++
+    //         console.log(counter)
+    //         console.log(area)
+    //     }
+    // }
 
     // for (const [departmentId, department] of Object.entries(departmentsDict)) {
     //     mapManager.addGeoJSON(`geojson/departments/${departmentId}.geojson`)
     // }
+
+    // let counter = 0
 
     for (const [areaId, area] of Object.entries(areasDict)) {
         if (area instanceof Municipality) {
@@ -59,6 +69,12 @@ async function run() {
         } else if (area instanceof Locality) {
             mapManager.addGeoJSON(`geojson/localities/${areaId}.geojson`)
         }
+
+        // if (!area.seller){
+        //     counter++
+        //     console.log(counter)
+        //     console.log(area)
+        // }
     }
 
     /** @type {Color[]} */
@@ -77,7 +93,7 @@ async function run() {
         {normal: "#9B2226", hover: "#b8282d"},
         {normal: "#890815", hover: "#aa091a"},
     ]
-    
+
     /** @type {{[sellerId: string]: Color}} */
     const sellersColors = Object.create(null)
 
@@ -85,7 +101,7 @@ async function run() {
 
     for (let i = 0; i < sellers.length; i++) {
         await mapManager.createSellerMarker(sellers[i])
-        sellersColors[sellers[i].id] = availableColors[i % availableColors.length - 1]
+        sellersColors[sellers[i].id] = availableColors[i % availableColors.length]
     }
 
     mapManager.map.map.data.setStyle((/** @type {MapFeature} */ feature) => {
@@ -106,11 +122,11 @@ async function run() {
                         feature.setProperty("state", "ASIGNADO");
                     } else {
                         fillColor = "gainsboro";
-                        hoverColor = "lightgray";
+                        hoverColor = "gainsboro";
                         feature.setProperty("state", "INACCESIBLE");
                     }
                 } else {
-                    fillColor = "#070D0D";
+                    fillColor = "#000000";
                     hoverColor = "#000000";
                     feature.setProperty("state", "EXCLUIDO");
                 }
@@ -124,24 +140,26 @@ async function run() {
         return {
             fillColor: fillColor,
             fillOpacity: 1,
-            strokeColor: hoverColor,
+            strokeColor: fillColor,
             strokeWeight: 1,
             strokeOpacity: 1
         };
     });
 
 
-    mapManager.map.map.data.addListener("mouseover", (/** @type {MapEvent} */ event) => {
-        const feature = event.feature;
-        const hoverColor = feature.getProperty("hoverColor");
-        mapManager.map.map.data.overrideStyle(feature, { fillColor: hoverColor });
-        event.domEvent.stopPropagation();
-    });
+    // mapManager.map.map.data.addListener("mouseover", (/** @type {MapEvent} */ event) => {
+    //     const feature = event.feature;
+    //     const hoverColor = feature.getProperty("hoverColor");
+    //     if (typeof hoverColor == "string") {
+    //         mapManager.map.map.data.overrideStyle(feature, { fillColor: hoverColor });
+    //         event.domEvent.stopPropagation();
+    //     }
+    // });
 
-    mapManager.map.map.data.addListener("mouseout", (/** @type {MapEvent} */ event) => {
-        const feature = event.feature;
-        mapManager.map.map.data.revertStyle(feature);
-    });
+    // mapManager.map.map.data.addListener("mouseout", (/** @type {MapEvent} */ event) => {
+    //     const feature = event.feature;
+    //     mapManager.map.map.data.revertStyle(feature);
+    // });
 
 
     // map.data.addListener("click", (event) => {
@@ -298,7 +316,7 @@ async function loadHospitalsDict(municipalitiesDict, localitiesDict) {
 
         if (area) {
             hospital.area = area;
-            hospital.area.hospitals.push(hospital);
+            area.hospitals.push(hospital);
         }
 
         if (!hospital.area) {
@@ -368,7 +386,7 @@ function createAreasDict(municipalitiesDict) {
  */
 async function assignHospitalsToSellers(hospitalsDict, sellersDict) {
 
-    const response = await fetch("./public/data/ndjson/distancesDrivingHospitalToSeller.ndjson");
+    const response = await fetch("./public/data/jsonl/distancesDrivingHospitalToSeller.jsonl");
 
     const reader = response.body?.getReader();
 
@@ -400,11 +418,13 @@ async function assignHospitalsToSellers(hospitalsDict, sellersDict) {
                         }
                     }
 
+                    // if (distancesDict[closestSellerId] <= 14400 /** 4 hours */) {
                     const currentHospital = hospitalsDict[hospitalId];
-                    const currentSeller = sellersDict[closestSellerId];
+                    const closestSeller = sellersDict[closestSellerId];
 
-                    currentHospital.seller = currentSeller;
-                    currentSeller.hospitals.push(currentHospital);
+                    currentHospital.seller = closestSeller;
+                    closestSeller.hospitals.push(currentHospital);
+                    // }
 
                     hospitalId = hospital.id
 
@@ -460,22 +480,20 @@ async function assignHospitalsToSellers(hospitalsDict, sellersDict) {
  * 
  * @param {Object<string, Municipality | Locality>} areasDict 
  * @param {Object<string, Seller>} sellersDict 
+ * @param {Object<string, Hospital>} hospitalsDict 
  */
-async function assignAreasToSellers(areasDict, sellersDict) {
-    const unassignedAreasDict = Object.create(null)
+async function assignSellersToAreas(areasDict, sellersDict, hospitalsDict) {
     for (const area of Object.values(areasDict)) {
-        if (area.hospitals.length > 0) {
-            const seller = await assignSellerByHospitalNumber(area, sellersDict)
+        if (area.hospitals.length) {
+            const seller = await assignSellersToAreasByHospitalNumber(area, sellersDict)
             if (seller) {
                 area.seller = seller
                 seller.areas.push(area)
             }
-        } else {
-            unassignedAreasDict[area.id] = area
         }
     }
 
-    // await assignSellersByHospitalDistance(unassignedAreasDict)
+    await assignSellersToAreasByHospitalDistance(areasDict, hospitalsDict)
 }
 
 /**
@@ -484,7 +502,7 @@ async function assignAreasToSellers(areasDict, sellersDict) {
  * @param {Object<string, Seller>} sellersDict 
  * @returns {Promise<Seller>}
  */
-async function assignSellerByHospitalNumber(area, sellersDict) {
+async function assignSellersToAreasByHospitalNumber(area, sellersDict) {
     let maxHospitalsNumber = 0
     let maxHospitalsSeller = ""
 
@@ -510,11 +528,114 @@ async function assignSellerByHospitalNumber(area, sellersDict) {
 
 /**
  * 
- * @param {Object<string, Municipality | Locality>} unassignedAreasDict
- * @param {Object<string, Seller>} sellersDict 
+ * @param {Object<string, Municipality | Locality>} areasDict
+ * @param {Object<string, Hospital>} hospitalsDict 
  */
-async function assignSellersByHospitalDistance(unassignedAreasDict, sellersDict) {
+async function assignSellersToAreasByHospitalDistance(areasDict, hospitalsDict) {
+    const paths = [
+        "./public/data/jsonl/distancesDrivingHospitalToArea1.jsonl",
+        "./public/data/jsonl/distancesDrivingHospitalToArea2.jsonl",
+        "./public/data/jsonl/distancesDrivingHospitalToArea3.jsonl",
+    ]
 
+    for (const path of paths) {
+        const response = await fetch(path);
+
+        const reader = response.body?.getReader();
+
+        if (reader) {
+            const decoder = new TextDecoder("utf-8");
+
+            const processLine = (/** @type {Boolean} */ lastLine = false) => {
+                try {
+                    /** @type {DistanceLine} */
+                    const distanceLine = JSON.parse(line);
+
+                    // @ts-ignore
+                    const area = areasDict[distanceLine["area"]];
+
+                    if (!area.seller){
+                        // @ts-ignore
+                        const hospital = hospitalsDict[distanceLine["hospital"]];
+    
+                        if (!hospitalId) {
+                            hospitalId = hospital.id;
+                        }
+    
+                        if (area) {
+                            if (hospitalId != hospital.id || lastLine) {
+                                let minDistance = Number.MAX_VALUE;
+                                let closestAreaId = "";
+    
+                                for (const [areaId, distance] of Object.entries(distancesDict)) {
+                                    if (distance < minDistance) {
+                                        minDistance = distance;
+                                        closestAreaId = areaId;
+                                    }
+                                }
+    
+                                // if (distancesDict[closestAreaId] <= 14400 /** 4 hours */) {
+                                const currentHospital = hospitalsDict[hospitalId];
+                                const closestArea = areasDict[closestAreaId];
+    
+                                if (currentHospital.seller) {
+                                    closestArea.seller = currentHospital.seller
+                                    currentHospital.seller.areas.push(closestArea)
+                                }
+                                // }
+    
+                                hospitalId = hospital.id
+    
+                                distancesDict = { [area.id]: distanceLine.duration.value }
+                            } else {
+                                distancesDict[area.id] = distanceLine.duration.value;
+                            }
+                        }
+                    }
+
+                } catch (error) {
+                    console.error("Error parsing line:", line, error);
+                }
+            };
+
+            /** @type {string} */
+            let line = ""
+            /** @type {string} */
+            let hospitalId = ""
+            /** @type {Object<string, number>}>} */
+            let distancesDict = Object.create(null)
+
+            let partialLine = "";
+
+            while (true) {
+                const { value, done } = await reader.read();
+
+                if (done) {
+                    break;
+                } else {
+                    partialLine += decoder.decode(value, { stream: true });
+
+                    const lines = partialLine.split("\n");
+
+                    partialLine = lines.pop() || "";
+
+                    for (const rawLine of lines) {
+                        line = rawLine.trim();
+
+                        if (line) {
+                            processLine()
+                        };
+                    }
+                }
+            }
+
+            line = partialLine.trim();
+
+            if (line) {
+                processLine(true)
+            }
+        }
+    }
 }
 
 /**

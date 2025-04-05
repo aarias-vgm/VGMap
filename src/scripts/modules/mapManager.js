@@ -320,8 +320,6 @@ export default class MapManager {
 
 
     /**
-     * Calcula distancias para cada par (place1, place2) evitando duplicados
-     * si se trata del mismo diccionario. Genera uno o más NDJSON.
      *
      * @param {Object<string, Place>} places1Dict
      * @param {Object<string, Place>} places2Dict
@@ -330,8 +328,8 @@ export default class MapManager {
      * @param {Boolean} test
      */
     async calculatePlacesDistances(places1Dict, places2Dict, travelMode = google.maps.TravelMode.DRIVING, className = false, test = false) {
-        let key1 = className ? Object.values(places1Dict).length > 0 ? Object.values(places1Dict)[0].constructor.name.toLowerCase() : "place1" : "place1";
-        let key2 = className ? Object.values(places2Dict).length > 0 ? Object.values(places2Dict)[0].constructor.name.toLowerCase() : "place2" : "place2";
+        let key1 = className ? Object.values(places1Dict).length > 0 ? Object.values(places1Dict)[0].constructor.name.toLowerCase() : "place" : "place";
+        let key2 = className ? Object.values(places2Dict).length > 0 ? Object.values(places2Dict)[0].constructor.name.toLowerCase() : "place" : "place";
 
         const fileName = `distances${travelMode.charAt(0) + travelMode.slice(1).toLowerCase()}${key1.charAt(0).toUpperCase() + key1.slice(1)}To${key2.charAt(0).toUpperCase() + key2.slice(1)}`;
 
@@ -345,7 +343,7 @@ export default class MapManager {
 
         if (test) {
             placeIds1 = placeIds1.slice(0, 1);
-            placeIds2 = placeIds2.slice(0, 2);
+            // placeIds2 = placeIds2.slice(0, 2);
         }
 
         const isSameDict = places1Dict === places2Dict;
@@ -378,20 +376,21 @@ export default class MapManager {
                 console.log(`${place1Id} -> ${place2Id} | ${counter} of ${maxCount} [${(counter / (maxCount / 100)).toFixed(2)}%]`);
 
                 const distance = await this.map.calculateDistance(place1, place2, travelMode);
+
                 if (distance) {
                     const object = { [key1]: place1Id, [key2]: place2Id, travelMode: travelMode, ...distance, };
                     lines.push(object);
                 }
 
                 if (lines.length > 999) {
-                    Files.saveNDJSON(lines, fileName, a);
+                    Files.saveJSONL(lines, fileName, a);
                     lines = [];
                 }
             }
         }
 
-        if (lines.length > 0) {
-            Files.saveNDJSON(lines, fileName, a);
+        if (lines.length) {
+            Files.saveJSONL(lines, fileName, a);
         }
     }
 
