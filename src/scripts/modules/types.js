@@ -63,6 +63,8 @@
  * @property {string} [back]
  * @property {string} [fore]
  * @property {string} [font]
+ * @property {string} [hover]
+ * @property {string} [normal]
  * @property {string} [border]
  */
 
