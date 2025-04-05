@@ -79,16 +79,16 @@ async function saveJSON(data, name = "file", ext = "json", a = null) {
 }
 
 /**
- * Transform data into NDJSON type and download it.
+ * Transform data into JSONL type and download it.
  * @param {Object[]} data
  * @param {string} name
  * @param {HTMLAnchorElement?} a
  */
-async function saveNDJSON(data, name = "file", a = null) {
+async function saveJSONL(data, name = "file", a = null) {
     const lines = data.map((/** @type {any} */ obj) => JSON.stringify(obj));
     const content = lines.join("\n");
 
-    await downloadFile(content, "application/x-ndjson", `${name}.ndjson`, a);
+    await downloadFile(content, "application/x-ndjson", `${name}.jsonl`, a);
 }
 
 const Files = {
@@ -97,7 +97,7 @@ const Files = {
     loadJSONFile: loadJSONFile,
     saveCSV: savePSV,
     saveJSON: saveJSON,
-    saveNDJSON: saveNDJSON
+    saveJSONL: saveJSONL
 }
 
 export default Files
