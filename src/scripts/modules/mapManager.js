@@ -293,22 +293,22 @@ export default class MapManager {
         }
     }
 
-    async createFeatureTooltips(){
+    async createDepartmentTooltips() {
 
         /** @type {PinColor} */
-        const pinColors = { background: "#FFFFFF", border: "#DC143C", "glyph": "#DC143C", hoverBackground: "#F5F5F5", hoverBorder: "#c51236", hoverGlyph: "#c51236" }
+        const pinColors = { background: "#75eb8c", border: "#2aa076", "glyph": "#75eb8c", hoverBackground: "#94ffa4", hoverBorder: "#75eb8c", hoverGlyph: "#56d775" }
 
         /** @type {Color} */
-        const nameColors = { back: "#FFFFFF", font: "#DC143C", border: "#DC143C" }
+        const nameColors = { back: "#d9efe6FF", font: "#158d65", border: "#53c498" }
 
         /** @type {Color} */
-        const infoColors = { back: "#DC143C", font: "#FFFFFF", border: "#DC143C" }
+        const infoColors = { back: "#2aa076", font: "#FFFFFF", border: "#08704d" }
 
         /** @type {Color} */
-        const selectionColors = { back: "#ffffff", font: "#ad102f" }
+        const selectionColors = { back: "#ffffff", font: "#158d65" }
 
         /** @type {Color} */
-        const scrollColors = { back: "transparent", fore: "#ad102f" }
+        const scrollColors = { back: "transparent", fore: "#158d65" }
 
         /** @type {Color[]} */
         const tagColors = [
@@ -320,11 +320,23 @@ export default class MapManager {
 
         const faIcon = "fa-map"
 
+        const options = {
+            style: "decimal",
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 2
+          };
+
+          const numberFormat = new Intl.NumberFormat("es-CO", {
+            maximumFractionDigits: 0,
+            minimumFractionDigits: 0,
+            style: "decimal"
+          });
+
         const returnInHTML = (/** @type {MapFeature} */ feature) => {
             const name = feature.getProperty('name');
-    
+
             return `
-            <div class="feature" style="padding: 5px; border: 2px solid ${nameColors.border}; border-radius: 5px; background-color: ${nameColors.back}; color: ${nameColors.font};">
+            <div class="feature" style="padding: 5px; border-radius: 5px; background-color: ${nameColors.back}; color: ${nameColors.font};">
             <i class="fa ${faIcon}"></i>
                 <span>${name}</span>
             </div>
@@ -332,7 +344,7 @@ export default class MapManager {
         }
         let index = Utils.getRandomNumber(tagColors.length);
 
-        const returnClickHTMLL = (/** @type {google.maps.Data.Feature} */ feature) => {
+        const returnClickHTML = (/** @type {google.maps.Data.Feature} */ feature) => {
 
             const name = feature.getProperty('name');
             const area = feature.getProperty('area');
@@ -340,27 +352,78 @@ export default class MapManager {
             const density2025 = feature.getProperty('density2025');
             const population2035 = feature.getProperty('population2035');
             const density2035 = feature.getProperty('density2035');
-    
-            return `
-            <div class="feature" style="padding: 10px; border: 2px solid ${infoColors.border}; border-radius: 5px; background-color: ${infoColors.back}; color: ${infoColors.font};">
-                <div style="display: flex; flex-direction: column; align-items: flex-start;">
-                    <h5 style="margin-bottom: 8px;">
-                        <i class="fa ${faIcon}" style="margin-right: 5px;"></i>
-                        <span>Nombre:${name}</span>
 
-                        <span>Area:${area}</span>
-                    </h5>
-                    <div style="margin-bottom: 4px;">
-                        <strong>Population 2025:</strong> <span>${population2025}</span><br>
-                        <strong>Density 2025:</strong> <span>${density2025}</span>
+            if (typeof area == "number" && typeof population2025 == "number" && typeof population2035 == "number" && typeof density2025 == "number" && typeof density2035 == "number" ) {
+                return `
+                    <div class="department feature-card" style="max-width: 225px; padding: 10px; border-radius: 8px; background-color: ${infoColors.back}; color: ${infoColors.font}; transition: all 0.3s ease;">
+                        <div class="card-header" style="display: inline-block; padding: 8px; align-items: center; margin-bottom: 12px; border-bottom: 1px solid ${infoColors.border};">
+                            <span style="margin: 0; align-items: center;"> 
+                                <i class="fa ${faIcon}" style="margin-right: 8px; color: ${infoColors.font || infoColors.border};"></i>
+                                <b>${name}</b>
+                            </span>
+                            <lrg style="white-space: nowrap;">[${numberFormat.format(area)} km<sup>2</sup>]</lrg>
+                        </div>
+                        <div class="statistics-table-container" style="padding: 8px; border-radius: 6px;"> 
+                            <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;"> 
+                                <thead>
+                                    <tr>
+                                        <th style ="padding: 4px; text-align: left; border-bottom: 2px solid ${infoColors.border}40;"></th>
+                                        <th style ="padding: 4px; text-align: right; border-bottom: 2px solid ${infoColors.border}40; border-left: 2px solid ${infoColors.border}40; background-color: rgba(255,255,255,0.1); color: ${infoColors.font || infoColors.font};">
+                                            <med>
+                                                <b>2025</b>
+                                            </med>
+                                        </th>
+                                        <th style ="padding: 4px; text-align: right; border-bottom: 2px solid ${infoColors.border}40; border-left: 2px solid ${infoColors.border}40; background-color: rgba(255,255,255,0.1); color: ${infoColors.font || infoColors.font};">
+                                            <med>
+                                                <b>2035</b>
+                                            </med>    
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="padding: 4px; text-align: center; border-bottom: 2px solid ${infoColors.border}40; border-left: 2px solid ${infoColors.border}40; background-color: rgba(255,255,255,0.1);">
+                                            <med>
+                                                <b>Población</b>
+                                            </med>
+                                        </td>
+                                        <td style="padding: 4px; text-align: right; background-color: rgba(255,255,255,0.1); border-left: 2px solid ${infoColors.border}40;">
+                                            <med>
+                                                ${numberFormat.format(population2025)}
+                                            </med>       
+                                        </td>
+                                        <td style="padding: 4px; text-align: right; border-left: 2px solid ${infoColors.border}40; background-color: rgba(255,255,255,0.1);">
+                                            <med>
+                                                ${numberFormat.format(population2035)}
+                                            </med>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 4px; text-align: center; border-top: 2px solid ${infoColors.border}40; border-left: 2px solid ${infoColors.border}40; background-color: rgba(255,255,255,0.1);">
+                                            <med>
+                                                <b>Densidad</b>
+                                            </med>    
+                                        </td>
+                                        <td style="padding: 4px; text-align: right; background-color: rgba(255,255,255,0.1); border-top: 2px solid ${infoColors.border}40; border-left: 2px solid ${infoColors.border}40;">
+                                            <med>
+                                                ${density2025.toFixed(2)}
+                                            </med>    
+                                        </td>
+                                        <td style="padding: 4px; text-align: right; background-color: rgba(255,255,255,0.1); border-left: 2px solid ${infoColors.border}40; border-top: 2px solid ${infoColors.border}40;">
+                                            <med>
+                                                ${density2035.toFixed(2)}
+                                            </med>    
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                    <div>
-                        <strong>Population 2035:</strong> <span>${population2035}</span><br>
-                        <strong>Density 2035:</strong> <span>${density2035}</span>
-                    </div>
-                </div>
-            </div>
-            `;
+                `;
+            } else {
+                return ""
+            }
+
         }
 
 
@@ -368,21 +431,21 @@ export default class MapManager {
 
         const showHover = (/** @type {MapEvent} */ event) => {
             this.map.map.data.overrideStyle(event.feature, {
-                fillColor: '#ff0000',
-                strokeColor: '#ff0000'
-              });
+                fillColor: '#3eb287',
+                strokeColor: '#007b54'
+            });
         }
 
         const hideHover = (/** @type {MapEvent} */ event) => {
             this.map.map.data.revertStyle(event.feature);
         }
 
-        
-        
 
-        Tooltip.addInTooltip(eventAdapter, this.map.map.data, returnInHTML, showHover, (eventRect, tooltipRect) => [eventRect.x, eventRect.y+5])
+
+
+        Tooltip.addInTooltip(eventAdapter, this.map.map.data, returnInHTML, showHover, (eventRect, tooltipRect) => [eventRect.x, eventRect.y + 5])
         Tooltip.addOutTooltip(eventAdapter, this.map.map.data, hideHover)
-        Tooltip.addClickTooltip(eventAdapter, this.map.map.data, returnClickHTMLL, showHover, (/** @type {Rect} */ targetRect, /** @type {Rect} */ tooltipRect) => [targetRect.x,targetRect.y])
+        Tooltip.addClickTooltip(eventAdapter, this.map.map.data, returnClickHTML, showHover, (/** @type {Rect} */ targetRect, /** @type {Rect} */ tooltipRect) => [targetRect.x, targetRect.y])
 
     }
 
