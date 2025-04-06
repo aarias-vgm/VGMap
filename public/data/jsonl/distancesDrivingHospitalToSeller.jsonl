@@ -12717,8 +12717,4 @@
 {"hospital":"901828276-1","seller":"pereira","travelMode":"DRIVING","distance":{"text":"955 km","value":954825},"duration":{"text":"16 hours 23 mins","value":58954}}
 {"hospital":"901828276-1","seller":"sancristobal","travelMode":"DRIVING","distance":{"text":"1,010 km","value":1009513},"duration":{"text":"17 hours 33 mins","value":63203}}
 {"hospital":"901828276-1","seller":"sincelejo","travelMode":"DRIVING","distance":{"text":"189 km","value":189431},"duration":{"text":"3 hours 24 mins","value":12220}}
-<<<<<<< HEAD:public/data/jsonl/distancesDrivingHospitalToSeller.jsonl
 {"hospital":"901828276-1","seller":"valledupar","travelMode":"DRIVING","distance":{"text":"542 km","value":542051},"duration":{"text":"9 hours 20 mins","value":33626}}
-=======
-{"hospital":"901828276-1","seller":"valledupar","travelMode":"DRIVING","distance":{"text":"542 km","value":542051},"duration":{"text":"9 hours 20 mins","value":33626}}
->>>>>>> 3e0ce4ef82a9a7e3c9416e51ee3189a1fc7b5863:public/data/ndjson/distancesDrivingHospitalToSeller.jsonl

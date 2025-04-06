@@ -79,19 +79,19 @@ async function run() {
 
     /** @type {Color[]} */
     const availableColors = [
-        {normal: "#003566", hover: "#004789"},
-        {normal: "#005F73", hover: "#007c96"},
-        {normal: "#0A9396", hover: "#0cb3b7"},
-        {normal: "#94D2BD", hover: "#addccc"},
-        {normal: "#E9D8A6", hover: "#f0e4c2"},
-        {normal: "#ffffff", hover: "#e5e5e5"},
-        {normal: "#ffc300", hover: "#ffcb23"},
-        {normal: "#EE9B00", hover: "#ffac12"},
-        {normal: "#CA6702", hover: "#ed7902"},
-        {normal: "#BB3E03", hover: "#de4903"},
-        {normal: "#AE2012", hover: "#ce2515"},
-        {normal: "#9B2226", hover: "#b8282d"},
-        {normal: "#890815", hover: "#aa091a"},
+        { normal: "#003566", hover: "#004789" },
+        { normal: "#005F73", hover: "#007c96" },
+        { normal: "#0A9396", hover: "#0cb3b7" },
+        { normal: "#94D2BD", hover: "#addccc" },
+        { normal: "#E9D8A6", hover: "#f0e4c2" },
+        { normal: "#ffffff", hover: "#e5e5e5" },
+        { normal: "#ffc300", hover: "#ffcb23" },
+        { normal: "#EE9B00", hover: "#ffac12" },
+        { normal: "#CA6702", hover: "#ed7902" },
+        { normal: "#BB3E03", hover: "#de4903" },
+        { normal: "#AE2012", hover: "#ce2515" },
+        { normal: "#9B2226", hover: "#b8282d" },
+        { normal: "#890815", hover: "#aa091a" },
     ]
 
     /** @type {{[sellerId: string]: Color}} */
@@ -383,8 +383,9 @@ function createAreasDict(municipalitiesDict) {
 /**
  * @param {Object<string, Hospital>} hospitalsDict
  * @param {Object<string, Seller>} sellersDict
+ * @param {number} secondsLimit
  */
-async function assignHospitalsToSellers(hospitalsDict, sellersDict) {
+async function assignHospitalsToSellers(hospitalsDict, sellersDict, secondsLimit = 0) {
 
     const response = await fetch("./public/data/jsonl/distancesDrivingHospitalToSeller.jsonl");
 
@@ -399,48 +400,59 @@ async function assignHospitalsToSellers(hospitalsDict, sellersDict) {
                 const distanceLine = JSON.parse(line);
 
                 // @ts-ignore
-                const hospital = hospitalsDict[distanceLine["hospital"]]; // @ts-ignore
-                // @ts-ignore
-                const seller = sellersDict[distanceLine["seller"]]; // @ts-ignore
+                const hospitalId = distanceLine["hospital"]
 
-                if (!hospitalId) {
-                    hospitalId = hospital.id;
-                }
+                const hospital = hospitalsDict[hospitalId];
 
-                if (hospitalId != hospital.id || lastLine) {
-                    let minDistance = Number.MAX_VALUE;
-                    let closestSellerId = "";
-
-                    for (const [sellerId, distance] of Object.entries(distancesDict)) {
-                        if (distance < minDistance) {
-                            minDistance = distance;
-                            closestSellerId = sellerId;
-                        }
+                if (hospital) {
+                    if (!blockHospital) {
+                        blockHospital = hospital.id;
                     }
 
-                    // if (distancesDict[closestSellerId] <= 14400 /** 4 hours */) {
-                    const currentHospital = hospitalsDict[hospitalId];
-                    const closestSeller = sellersDict[closestSellerId];
+                    // @ts-ignore
+                    const sellerId = distanceLine["seller"]
 
-                    currentHospital.seller = closestSeller;
-                    closestSeller.hospitals.push(currentHospital);
-                    // }
+                    const seller = sellersDict[sellerId];
 
-                    hospitalId = hospital.id
+                    if (seller) {
+                        if (blockHospital != hospital.id || lastLine) {
+                            let minDistance = Number.MAX_VALUE;
+                            let closestSellerId = "";
 
-                    distancesDict = { [seller.id]: distanceLine.duration.value }
+                            for (const [distanceSellerId, distance] of Object.entries(distancesDict)) {
+                                if (distance < minDistance) {
+                                    minDistance = distance;
+                                    closestSellerId = distanceSellerId;
+                                }
+                            }
+
+                            if (secondsLimit ? distancesDict[closestSellerId] <= secondsLimit : true) {
+                                const closestHospital = hospitalsDict[blockHospital];
+                                const closestSeller = sellersDict[closestSellerId];
+
+                                closestHospital.seller = closestSeller;
+                                closestSeller.hospitals.push(closestHospital);
+                            }
+
+                            blockHospital = hospital.id
+
+                            distancesDict = { [seller.id]: distanceLine.duration.value }
+                        } else {
+                            distancesDict[seller.id] = distanceLine.duration.value;
+                        }
+                    } else {
+                        throw new Error(`Seller not found: ${sellerId}`)
+                    }
                 } else {
-                    distancesDict[seller.id] = distanceLine.duration.value;
+                    throw new Error(`Hospital not found: ${hospitalId}`)
                 }
             } catch (error) {
                 console.error("Error parsing line:", line, error);
             }
         };
 
-        /** @type {string} */
         let line = ""
-        /** @type {string} */
-        let hospitalId = ""
+        let blockHospital = ""
         /** @type {Object<string, number>}>} */
         let distancesDict = Object.create(null)
 
@@ -530,12 +542,14 @@ async function assignSellersToAreasByHospitalNumber(area, sellersDict) {
  * 
  * @param {Object<string, Municipality | Locality>} areasDict
  * @param {Object<string, Hospital>} hospitalsDict 
+ * @param {number} secondsLimit 
  */
-async function assignSellersToAreasByHospitalDistance(areasDict, hospitalsDict) {
+async function assignSellersToAreasByHospitalDistance(areasDict, hospitalsDict, secondsLimit = 0) {
     const paths = [
+        // "./public/data/jsonl/distancesDrivingHospitalToArea.jsonl",
         "./public/data/jsonl/distancesDrivingHospitalToArea1.jsonl",
-        "./public/data/jsonl/distancesDrivingHospitalToArea2.jsonl",
-        "./public/data/jsonl/distancesDrivingHospitalToArea3.jsonl",
+        // "./public/data/jsonl/distancesDrivingHospitalToArea2.jsonl",
+        // "./public/data/jsonl/distancesDrivingHospitalToArea3.jsonl",
     ]
 
     for (const path of paths) {
@@ -552,56 +566,68 @@ async function assignSellersToAreasByHospitalDistance(areasDict, hospitalsDict) 
                     const distanceLine = JSON.parse(line);
 
                     // @ts-ignore
-                    const area = areasDict[distanceLine["area"]];
+                    const areaId = distanceLine["area"];
 
-                    if (!area.seller){
-                        // @ts-ignore
-                        const hospital = hospitalsDict[distanceLine["hospital"]];
-    
-                        if (!hospitalId) {
-                            hospitalId = hospital.id;
+                    const area = areasDict[areaId]
+
+                    if (area) {
+                        if (!blockAreaId) {
+                            blockAreaId = area.id;
                         }
-    
-                        if (area) {
-                            if (hospitalId != hospital.id || lastLine) {
-                                let minDistance = Number.MAX_VALUE;
-                                let closestAreaId = "";
-    
-                                for (const [areaId, distance] of Object.entries(distancesDict)) {
-                                    if (distance < minDistance) {
-                                        minDistance = distance;
-                                        closestAreaId = areaId;
+
+                        if (!area.seller) {
+                            // @ts-ignore
+                            const hospitalId = distanceLine["hospital"]
+
+                            const hospital = hospitalsDict[hospitalId];
+
+                            if (hospital) {
+                                if (blockAreaId != area.id || lastLine) {
+                                    let minDistance = Number.MAX_VALUE;
+                                    let closestHospitalId = "";
+
+                                    for (const [distanceHospitalId, distance] of Object.entries(distancesDict)) {
+                                        if (distance < minDistance) {
+                                            minDistance = distance;
+                                            closestHospitalId = distanceHospitalId;
+                                        }
                                     }
+                                    
+                                    console.log(closestHospitalId)
+                                    console.log(distancesDict)
+
+                                    if (secondsLimit ? distancesDict[closestHospitalId] <= secondsLimit : true) {
+                                        const closestArea = areasDict[blockAreaId];
+                                        const closestHospital = hospitalsDict[closestHospitalId];
+                                        
+                                        if (closestHospital.seller) {
+                                            closestArea.seller = closestHospital.seller
+                                            closestHospital.seller.areas.push(closestArea)
+                                        } else {
+                                            throw new Error(`Hospital doesn't contain seller: ${closestHospital}`)
+                                        }
+                                    }
+
+                                    blockAreaId = hospital.id
+
+                                    distancesDict = { [hospital.id]: distanceLine.duration.value }
+                                } else {
+                                    distancesDict[hospital.id] = distanceLine.duration.value;
                                 }
-    
-                                // if (distancesDict[closestAreaId] <= 14400 /** 4 hours */) {
-                                const currentHospital = hospitalsDict[hospitalId];
-                                const closestArea = areasDict[closestAreaId];
-    
-                                if (currentHospital.seller) {
-                                    closestArea.seller = currentHospital.seller
-                                    currentHospital.seller.areas.push(closestArea)
-                                }
-                                // }
-    
-                                hospitalId = hospital.id
-    
-                                distancesDict = { [area.id]: distanceLine.duration.value }
                             } else {
-                                distancesDict[area.id] = distanceLine.duration.value;
+                                throw new Error(`Hospital not found: ${hospitalId}`)
                             }
                         }
+                    } else {
+                        throw new Error(`Area not found: ${areaId}`)
                     }
-
                 } catch (error) {
                     console.error("Error parsing line:", line, error);
                 }
             };
 
-            /** @type {string} */
             let line = ""
-            /** @type {string} */
-            let hospitalId = ""
+            let blockAreaId = ""
             /** @type {Object<string, number>}>} */
             let distancesDict = Object.create(null)
 
