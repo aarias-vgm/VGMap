@@ -2,13 +2,13 @@
     "id": "1100101",
     "type": "Feature",
     "properties": {
-        "name": "USAQUEN",
+        "name": "USAQUÉN",
         "type": "LOCALIDAD",
         "area": 65.54,
-        "poblacion2025":602412,
-        "densidad2025":9191,
-        "poblacion2035":687885,
-        "densidad2035":10496,
+        "population2025":602412,
+        "density2025":9191,
+        "population2035":687885,
+        "density2035":10496,
         "localityId": "01",
         "municipalityId": "11001",
         "municipalityName": "BOGOTÁ, D.C."
