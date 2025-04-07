@@ -1,5 +1,5 @@
 /**
- * @typedef {import('./types.js').Color} Color
+ * @typedef {import('./types.js').UIColor} UIColor
  */
 
 /**
@@ -13,20 +13,20 @@ function setColorVars(property, color) {
 
 /**
  * 
- * @param {Color} color
+ * @param {UIColor} color
  */
 function setSelectionColors(color) {
-    setColorVars("--selection-back-color", color.back || "")
-    setColorVars("--selection-font-color", color.font || "")
+    setColorVars("--selection-back-color", color.back)
+    setColorVars("--selection-font-color", color.font)
 }
 
 /**
  * 
- * @param {Color} color 
+ * @param {UIColor} color 
  */
 function setScrollbarColors(color) {
-    setColorVars("--scrollbar-thumb-color", color.fore || "")
-    setColorVars("--scrollbar-track-color", color.back || "")
+    setColorVars("--scrollbar-thumb-color", color.font)
+    setColorVars("--scrollbar-track-color", color.back)
 }
 
 const Style = {
