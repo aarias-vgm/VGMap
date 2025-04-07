@@ -5,13 +5,15 @@
         "name": "BOSA",
         "type": "LOCALIDAD",
         "area": 23.93,
-        "population2025":737647,
-        "density2025":30825,
-        "population2035":771295,
-        "density2035":32231,
+        "population2025": 737647,
+        "density2025": 30825,
+        "population2035": 771295,
+        "density2035": 32231,
         "localityId": "07",
         "municipalityId": "11001",
-        "municipalityName": "BOGOTÁ, D.C."
+        "municipalityName": "BOGOTÁ, D.C.",
+        "departmentId": "11",
+        "departmentName": "BOGOTÁ, D.C."
     },
     "geometry": {
         "type": "Polygon",

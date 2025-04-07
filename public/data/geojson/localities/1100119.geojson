@@ -5,13 +5,15 @@
         "name": "CIUDAD BOLIVAR",
         "type": "LOCALIDAD",
         "area": 130,
-        "population2025":671670,
-        "density2025":5166,
-        "population2035":731503,
-        "density2035":5627,
+        "population2025": 671670,
+        "density2025": 5166,
+        "population2035": 731503,
+        "density2035": 5627,
         "localityId": "19",
         "municipalityId": "11001",
-        "municipalityName": "BOGOTÁ, D.C."
+        "municipalityName": "BOGOTÁ, D.C.",
+        "departmentId": "11",
+        "departmentName": "BOGOTÁ, D.C."
     },
     "geometry": {
         "type": "Polygon",

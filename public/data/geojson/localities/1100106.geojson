@@ -5,13 +5,15 @@
         "name": "TUNJUELITO",
         "type": "LOCALIDAD",
         "area": 9.91,
-        "population2025":186127,
-        "density2025":18781,
-        "population2035":193527,
-        "density2035":19528,
+        "population2025": 186127,
+        "density2025": 18781,
+        "population2035": 193527,
+        "density2035": 19528,
         "localityId": "06",
         "municipalityId": "11001",
-        "municipalityName": "BOGOTÁ, D.C."
+        "municipalityName": "BOGOTÁ, D.C.",
+        "departmentId": "11",
+        "departmentName": "BOGOTÁ, D.C."
     },
     "geometry": {
         "type": "Polygon",

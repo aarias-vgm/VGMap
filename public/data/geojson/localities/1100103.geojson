@@ -5,13 +5,15 @@
         "name": "SANTA FÉ",
         "type": "LOCALIDAD",
         "area": 45.17,
-        "population2025":107851,
-        "density2025":2387,
-        "population2035":115972,
-        "density2035":2567,
+        "population2025": 107851,
+        "density2025": 2387,
+        "population2035": 115972,
+        "density2035": 2567,
         "localityId": "03",
         "municipalityId": "11001",
-        "municipalityName": "BOGOTÁ, D.C."
+        "municipalityName": "BOGOTÁ, D.C.",
+        "departmentId": "11",
+        "departmentName": "BOGOTÁ, D.C."
     },
     "geometry": {
         "type": "Polygon",

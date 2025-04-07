@@ -5,13 +5,15 @@
         "name": "LOS MARTIRES",
         "type": "LOCALIDAD",
         "area": 6.51,
-        "population2025":82827,
-        "density2025":12684,
-        "population2035":86592,
-        "density2035":13261,
+        "population2025": 82827,
+        "density2025": 12684,
+        "population2035": 86592,
+        "density2035": 13261,
         "localityId": "14",
         "municipalityId": "11001",
-        "municipalityName": "BOGOTÁ, D.C."
+        "municipalityName": "BOGOTÁ, D.C.",
+        "departmentId": "11",
+        "departmentName": "BOGOTÁ, D.C."
     },
     "geometry": {
         "type": "Polygon",

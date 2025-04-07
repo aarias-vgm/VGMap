@@ -5,13 +5,15 @@
         "name": "PUENTE ARANDA",
         "type": "LOCALIDAD",
         "area": 17.31,
-        "population2025":259314,
-        "density2025":14980,
-        "population2035":264460,
-        "density2035":15278,
+        "population2025": 259314,
+        "density2025": 14980,
+        "population2035": 264460,
+        "density2035": 15278,
         "localityId": "16",
         "municipalityId": "11001",
-        "municipalityName": "BOGOTÁ, D.C."
+        "municipalityName": "BOGOTÁ, D.C.",
+        "departmentId": "11",
+        "departmentName": "BOGOTÁ, D.C."
     },
     "geometry": {
         "type": "Polygon",

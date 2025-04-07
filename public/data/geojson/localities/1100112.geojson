@@ -5,13 +5,15 @@
         "name": "BARRIOS UNIDOS",
         "type": "LOCALIDAD",
         "area": 11.90,
-        "population2025":159163,
-        "density2025":13375,
-        "population2035":177072,
-        "density2035":14880,
+        "population2025": 159163,
+        "density2025": 13375,
+        "population2035": 177072,
+        "density2035": 14880,
         "localityId": "12",
         "municipalityId": "11001",
-        "municipalityName": "BOGOTÁ, D.C."
+        "municipalityName": "BOGOTÁ, D.C.",
+        "departmentId": "11",
+        "departmentName": "BOGOTÁ, D.C."
     },
     "geometry": {
         "type": "Polygon",

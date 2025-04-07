@@ -5,13 +5,15 @@
         "name": "ANTONIO NARIÑO",
         "type": "LOCALIDAD",
         "area": 4.87,
-        "population2025":86119,
-        "density2025":17683,
-        "population2035":95290,
-        "density2035":19567,
+        "population2025": 86119,
+        "density2025": 17683,
+        "population2035": 95290,
+        "density2035": 19567,
         "localityId": "15",
         "municipalityId": "11001",
-        "municipalityName": "BOGOTÁ, D.C."
+        "municipalityName": "BOGOTÁ, D.C.",
+        "departmentId": "11",
+        "departmentName": "BOGOTÁ, D.C."
     },
     "geometry": {
         "type": "Polygon",

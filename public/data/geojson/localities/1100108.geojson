@@ -5,13 +5,15 @@
         "name": "KENNEDY",
         "type": "LOCALIDAD",
         "area": 38.58,
-        "population2025":1041286,
-        "density2025":26990,
-        "population2035":1081043,
-        "density2035":28021,
+        "population2025": 1041286,
+        "density2025": 26990,
+        "population2035": 1081043,
+        "density2035": 28021,
         "localityId": "08",
         "municipalityId": "11001",
-        "municipalityName": "BOGOTÁ, D.C."
+        "municipalityName": "BOGOTÁ, D.C.",
+        "departmentId": "11",
+        "departmentName": "BOGOTÁ, D.C."
     },
     "geometry": {
         "type": "Polygon",

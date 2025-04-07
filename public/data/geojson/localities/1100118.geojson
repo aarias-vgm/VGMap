@@ -5,13 +5,15 @@
         "name": "RAFAEL URIBE URIBE",
         "type": "LOCALIDAD",
         "area": 13.83,
-        "population2025":393869,
-        "density2025":28479,
-        "population2035":412281,
-        "density2035":29811,
+        "population2025": 393869,
+        "density2025": 28479,
+        "population2035": 412281,
+        "density2035": 29811,
         "localityId": "18",
         "municipalityId": "11001",
-        "municipalityName": "BOGOTÁ, D.C."
+        "municipalityName": "BOGOTÁ, D.C.",
+        "departmentId": "11",
+        "departmentName": "BOGOTÁ, D.C."
     },
     "geometry": {
         "type": "Polygon",

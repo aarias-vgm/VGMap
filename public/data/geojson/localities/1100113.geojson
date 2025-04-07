@@ -5,13 +5,15 @@
         "name": "TEUSAQUILLO",
         "type": "LOCALIDAD",
         "area": 14.19,
-        "population2025":164384,
-        "density2025":11584,
-        "population2035":160048,
-        "density2035":11279,
+        "population2025": 164384,
+        "density2025": 11584,
+        "population2035": 160048,
+        "density2035": 11279,
         "localityId": "13",
         "municipalityId": "11001",
-        "municipalityName": "BOGOTÁ, D.C."
+        "municipalityName": "BOGOTÁ, D.C.",
+        "departmentId": "11",
+        "departmentName": "BOGOTÁ, D.C."
     },
     "geometry": {
         "type": "Polygon",
