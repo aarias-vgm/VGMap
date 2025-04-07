@@ -105,6 +105,7 @@ export default class Map {
 
     async importPlacesService() {
         // @ts-ignore
+        // const { PlacesService } = await google.maps.importLibrary("places");
         const { PlacesService } = await google.maps.importLibrary("places");
         this.placesService = PlacesService
     }
@@ -114,10 +115,15 @@ export default class Map {
      * @param {Place} element 
      * @param {string} elementType 
      * @param {string} faIcon 
-     * @param {PinColor} pinColor 
+     * @param {Color} color 
+     * @param {Color?} hoverColor 
      * @returns {Promise<google.maps.marker.AdvancedMarkerElement>}
      */
-    async createMarker(element, elementType, faIcon, pinColor) {
+    async createMarker(element, elementType, faIcon, color, hoverColor = null) {
+
+        if (!hoverColor) {
+            hoverColor = color
+        }
 
         const icon = document.createElement("div");
 
@@ -130,9 +136,9 @@ export default class Map {
         // @ts-ignore
         const pin = new this.pinElement({
             glyph: icon,
-            background: pinColor.background,
-            borderColor: pinColor.border,
-            glyphColor: pinColor.glyph,
+            background: color.back,
+            glyphColor: color.fore,
+            borderColor: color.accent,
             scale: 1,
         });
 
@@ -143,37 +149,49 @@ export default class Map {
             content: pin.element,
             title: `${elementType}: ${element.name}`,
             zIndex: 999,
-            draggable: false
+            draggable: false,
+            gmpClickable: true,
+            collisionBehavior: "REQUIRED",
         });
 
+        marker.element.style.background = "transparent"
+
         marker.element.querySelectorAll('*').forEach((/** @type {HTMLElement} */ child) => {
+            child.style.zIndex = "0"
+            child.style.pointerEvents = 'none';
+        });
+
+        pin.element.querySelectorAll('*').forEach((/** @type {HTMLElement} */ child) => {
+            child.style.zIndex = "0"
             child.style.pointerEvents = 'none';
         });
 
         marker.element.addEventListener("mouseenter", (/** @type {MouseEvent} */ event) => {
+            event.stopPropagation()
             marker.element.style.cursor = "pointer"
-
+            
             pin.element.style.opacity = "0.9"
             pin.element.style.transform = "scale(1.2)";
             pin.element.style.transition = "all 0.2s ease-out";
 
-            pin.background = pinColor.hoverBackground;
-            pin.borderColor = pinColor.hoverBorder;
-            pin.glyphColor = pinColor.hoverGlyph;
-
+            pin.background = hoverColor.back;
+            pin.glyphColor = hoverColor.fore;
+            pin.borderColor = hoverColor.accent;
+            
             marker.element.style.zIndex = 1000
         });
         
         marker.element.addEventListener("mouseleave", (/** @type {MouseEvent} */ event) => {
+            event.stopPropagation()
             marker.element.style.cursor = "auto"
 
             pin.element.style.opacity = "1"
             pin.element.style.transform = "scale(1)";
-            
-            pin.background = pinColor.background;
-            pin.borderColor = pinColor.border;
-            pin.glyphColor = pinColor.glyph;
-            
+
+            pin.background = color.back;
+            pin.borderColor = color.fore;
+            pin.glyphColor = color.fore;
+
             setTimeout(() => {
                 pin.element.style.transition = "none";
                 marker.element.style.zIndex = 999
@@ -225,38 +243,49 @@ export default class Map {
         });
     }
 
+    // async getBounding
+
     /**
      * 
      * @param {string} name 
-     * @param {Place} place 
+     * @param {Place?} place 
      * @param {string} type 
-     * @param {number} radius 
      * @param {Promise<Place>} type 
+     * @param {number} radius 
      * @returns {Promise<{name: string, adminArea1: string, adminArea2: string, lat: number, lng: number}[]>}
     */
-    async getNearbyPlace(name, place, type, radius = 50000) {
+    async getNearbyPlace(name, type = "", place = null, radius = 0) {
         /** @type {google.maps.places.PlacesService} */
         // @ts-ignore
         const service = new this.placesService(this.map)
+
+        /** @type {google.maps.places.TextSearchRequest} */
+        const query = { query: name }
+
+        if (type) {
+            query["type"] = type
+        }
+
+        if (radius) {
+            query["radius"] = radius
+        }
+
+        if (place) {
+            query["location"] = place.getLatLng()
+        }
+
         return new Promise((resolve) => {
             service.textSearch(
-                {
-                    query: name,
-                    location: place.getLatLng(),
-                    radius: radius, // max 50 km
-                    type: type
-                },
+                query,
+                // @ts-ignore
                 async (results, status) => {
                     if (status === google.maps.places.PlacesServiceStatus.OK && results) {
                         const searchResults = []
 
                         for (const place of results) {
                             const placeDetails = await this.#getPlaceDetails(place)
-                            if (placeDetails) {
-                                searchResults.push(placeDetails)
-                            }
+                            searchResults.push({"queryName": query.query, ...placeDetails})
                         }
-
                         resolve(searchResults);
                     } else {
                         resolve([]);
