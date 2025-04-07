@@ -60,12 +60,10 @@
 
 /**
  * @typedef {Object} Color
- * @property {string} [back]
- * @property {string} [fore]
- * @property {string} [font]
- * @property {string} [hover]
- * @property {string} [normal]
- * @property {string} [border]
+ * @property {string} back
+ * @property {string} fore
+ * @property {string} accent
+ * @property {string} [accent2]
  */
 
 /**
