@@ -1,6 +1,7 @@
 import { Department, Municipality, Hospital, Seller, Locality } from "./modules/classes.js"
 import MapManager from "./modules/mapManager.js"
 import Files from "./modules/files.js"
+import Utils from "./modules/utils.js"
 
 /**
  * @typedef {import('./modules/types.js').Color} Color
@@ -37,13 +38,17 @@ async function run() {
     await mapManager.map.importPinElement()
     await mapManager.map.importAdvancedMarkerElement()
 
-    await mapManager.map.importDistanceService()
-    await mapManager.map.importGeocoderService()
+    // await mapManager.map.importPlacesService()
+    // await mapManager.map.importDistanceService()
+    // await mapManager.map.importGeocoderService()
 
-    // await mapManager.calculatePlacesDistances(departmentsDict, departmentsDict, google.maps.TravelMode.DRIVING, true)
-    //await mapManager.calculatePlacesDistances(hospitalsDict, sellersDict, google.maps.TravelMode.DRIVING, true)
-    // await mapManager.calculatePlacesDistances(hospitalsDict, areasDict, google.maps.TravelMode.DRIVING, false)
-    // await mapManager.calculatePlacesDistances(hospitalsDict, localitiesDict, google.maps.TravelMode.DRIVING, false)
+    // const foundedAreas = await searchAreas(mapManager, areasDict)
+    // Files.saveJSON(foundedAreas)
+    // return
+
+    // await mapManager.calculatePlacesDistances(departmentsDict, departmentsDict, google.maps.TravelMode.DRIVING)
+    // await mapManager.calculatePlacesDistances(hospitalsDict, sellersDict, google.maps.TravelMode.DRIVING)
+    // await mapManager.calculatePlacesDistances(hospitalsDict, areasDict, google.maps.TravelMode.DRIVING, ["hospital", "area"])
 
     await assignHospitalsToSellers(hospitalsDict, sellersDict)
     await assignSellersToAreas(areasDict, sellersDict, hospitalsDict)
@@ -70,6 +75,9 @@ async function run() {
             mapManager.addGeoJSON(`geojson/localities/${areaId}.geojson`)
         }
 
+        if (!area.seller) {
+            console.log(area)
+        }
         // if (!area.seller){
         //     counter++
         //     console.log(counter)
@@ -79,19 +87,22 @@ async function run() {
 
     /** @type {Color[]} */
     const availableColors = [
-        { normal: "#003566", hover: "#004789" },
-        { normal: "#005F73", hover: "#007c96" },
-        { normal: "#0A9396", hover: "#0cb3b7" },
-        { normal: "#94D2BD", hover: "#addccc" },
-        { normal: "#E9D8A6", hover: "#f0e4c2" },
-        { normal: "#ffffff", hover: "#e5e5e5" },
-        { normal: "#ffc300", hover: "#ffcb23" },
-        { normal: "#EE9B00", hover: "#ffac12" },
-        { normal: "#CA6702", hover: "#ed7902" },
-        { normal: "#BB3E03", hover: "#de4903" },
-        { normal: "#AE2012", hover: "#ce2515" },
-        { normal: "#9B2226", hover: "#b8282d" },
-        { normal: "#890815", hover: "#aa091a" },
+        { back: "#99CC33", fore: "#FFFFFF", accent: "#7aa329", accent2: "#B3D966" /** #A3D147 #A8D452 #ADD65C #B3D966 #B8DB70 #BDDE7A */ },
+        { back: "#3CB371", fore: "#FFFFFF", accent: "#409666", accent2: "#63C28D" /** #50BB7F #59BE86 #63C28D #6DC695 #77CA9C #80CEA3 */ },
+        { back: "#00846A", fore: "#FFFFFF", accent: "#006a55", accent2: "#269680" /** #1A9079 #269680 #339D88 #40A38F #4DA997 #59AF9E */ },
+        { back: "#00BBE1", fore: "#FFFFFF", accent: "#0096b4", accent2: "#33C9E7" /** #1AC2E4 #26C5E6 #33C9E7 #40CCE9 #4DCFEA #59D3EC */ },
+        { back: "#006699", fore: "#FFFFFF", accent: "#00527a", accent2: "#267DA8" /** #1A75A3 #267DA8 #3385AD #408CB3 #4D94B8 #599CBD */ },
+        { back: "#31A0B9", fore: "#FFFFFF", accent: "#278094", accent2: "#5AB3C7" /** #46AAC0 #50AEC4 #5AB3C7 #65B8CB #6FBDCE #79C1D2 */ },
+        { back: "#61DAD8", fore: "#FFFFFF", accent: "#4eaead", accent2: "#98E7E6" /** #71DEDC #79E0DE #81E1E0 #89E3E2 #90E5E4 #98E7E6 */ },
+        { back: "#B22222", fore: "#FFFFFF", accent: "#7D1818", accent2: "#BA3838" /** #BA3838 #BE4343 #C14E4E #C55959 #C96464 #CD6F6F */ },
+        { back: "#DC143C", fore: "#FFFFFF", accent: "#972940", accent2: "#DC4F6B" /** #DC4F6B #DE5874 #E0627C #E26C84 #E4788C #E68094 */ },
+        { back: "#C71585", fore: "#FFFFFF", accent: "#8B0F5D", accent2: "#CF3897" /** #CD2C91 #CF3897 #D2449D #D550A4 #D85BAA #D85BAA */ },
+        { back: "#E65689", fore: "#FFFFFF", accent: "#A13C60", accent2: "#EA6F9B" /** #E96795 #EA6F9B #EB78A1 #EC80A7 #EE89AC #EF91B2 */ },
+        { back: "#8558B3", fore: "#FFFFFF", accent: "#5D3E7D", accent2: "#AE94E4" /** #9169BB #9771BE #9D79C2 #A482C6 #AA8ACA #B092CE */ },
+        { back: "#6225cc", fore: "#FFFFFF", accent: "#451A8F", accent2: "#723BD1" /** #723BD1 #7A46D4 #8151D6 #895CD9 #9166DB #9971DE */ },
+        { back: "#FF6600", fore: "#FFFFFF", accent: "#cc5200", accent2: "#FF8533" /** #FF751A #FF7D26 #FF8533 #FF8C40 #FF944D #FF9C59 */ },
+        { back: "#FF9900", fore: "#FFFFFF", accent: "#cc7a00", accent2: "#FFB340" /** #FFA31A #FFA826 #FFAD33 #FFB340 #FFB84D #FFBD59 */ },
+        { back: "#FFCC00", fore: "#FFFFFF", accent: "#cca300", accent2: "#FFDE59" /** #FFD11A #FFD426 #FFD633 #FFD940 #FFDB4D #FFDE59 */ },
     ]
 
     /** @type {{[sellerId: string]: Color}} */
@@ -99,14 +110,31 @@ async function run() {
 
     const sellers = Object.values(sellersDict)
 
+
     for (let i = 0; i < sellers.length; i++) {
-        await mapManager.createSellerMarker(sellers[i])
-        sellersColors[sellers[i].id] = availableColors[i % availableColors.length]
+        let randomNumber = Utils.getRandomNumber(availableColors.length)
+
+        while (Object.values(sellersColors).includes(availableColors[randomNumber])) {
+            randomNumber = Utils.getRandomNumber(availableColors.length)
+        }
+
+        sellersColors[sellers[i].id] = availableColors[randomNumber]
+
+        await mapManager.createSellerMarker(sellers[i], sellersColors[sellers[i].id])
     }
 
+    // for (const hospital of Object.values(hospitalsDict)) {
+    //     if (hospital.complexity = ){
+    //         await mapManager.createHospitalMarker(hospital)
+    //     }
+    // }
+
     mapManager.map.map.data.setStyle((/** @type {MapFeature} */ feature) => {
-        let fillColor = "";
-        let hoverColor = "";
+        let fillColor = ""
+        let hoverColor = ""
+        let strokeColor = ""
+        let strokeWeight = 1
+        let strokeOpacity = 1
 
         const areaId = feature.getId();
         if (areaId) {
@@ -117,34 +145,41 @@ async function run() {
                 if (!excludedDepartments.includes(department.id)) {
                     const seller = area.seller;
                     if (seller) {
-                        fillColor = sellersColors[seller.id].normal || "";
-                        hoverColor = sellersColors[seller.id].hover || "";
+                        fillColor = sellersColors[seller.id].back
+                        hoverColor = sellersColors[seller.id].accent
+                        strokeColor = sellersColors[seller.id].accent2 || ""
                         feature.setProperty("state", "ASIGNADO");
+                        strokeWeight = 2
                     } else {
-                        fillColor = "gainsboro";
-                        hoverColor = "gainsboro";
+                        fillColor = "#ebebeb";
+                        hoverColor = "#c4c4c4";
+                        strokeColor = "#ffffff"
                         feature.setProperty("state", "INACCESIBLE");
                     }
                 } else {
-                    fillColor = "#000000";
-                    hoverColor = "#000000";
+                    fillColor = "#A9A9A9";
+                    hoverColor = "#808080";
+                    strokeColor = "#A9A9A9"
                     feature.setProperty("state", "EXCLUIDO");
                 }
             }
         }
 
-        // Guardar los colores en el feature para luego usarlos en los eventos
+
         feature.setProperty("fillColor", fillColor);
         feature.setProperty("hoverColor", hoverColor);
 
         return {
             fillColor: fillColor,
             fillOpacity: 1,
-            strokeColor: fillColor,
-            strokeWeight: 1,
-            strokeOpacity: 1
+            strokeColor: strokeColor,
+            strokeWeight: strokeWeight,
+            strokeOpacity: strokeOpacity
         };
     });
+
+    await mapManager.createFeatureTooltips(areasDict)
+
 
 
     // mapManager.map.map.data.addListener("mouseover", (/** @type {MapEvent} */ event) => {
@@ -394,57 +429,57 @@ async function assignHospitalsToSellers(hospitalsDict, sellersDict, secondsLimit
     if (reader) {
         const decoder = new TextDecoder("utf-8");
 
-        const processLine = (/** @type {Boolean} */ lastLine = false) => {
+        const processLine = (/** @type {Boolean} */ endLine = false) => {
             try {
                 /** @type {DistanceLine} */
                 const distanceLine = JSON.parse(line);
 
                 // @ts-ignore
-                const hospitalId = distanceLine["hospital"]
+                const currentHospitalId = distanceLine["hospital"]
 
-                const hospital = hospitalsDict[hospitalId];
+                const currentHospital = hospitalsDict[currentHospitalId];
 
-                if (hospital) {
-                    if (!blockHospital) {
-                        blockHospital = hospital.id;
+                if (currentHospital) {
+                    if (!storedHospitalId) {
+                        storedHospitalId = currentHospital.id;
                     }
 
                     // @ts-ignore
-                    const sellerId = distanceLine["seller"]
+                    const currentSellerId = distanceLine["seller"]
 
-                    const seller = sellersDict[sellerId];
+                    const currentSeller = sellersDict[currentSellerId];
 
-                    if (seller) {
-                        if (blockHospital != hospital.id || lastLine) {
-                            let minDistance = Number.MAX_VALUE;
+                    if (currentSeller) {
+                        if (storedHospitalId != currentHospital.id || endLine) {
+                            let minDuration = Number.MAX_VALUE;
                             let closestSellerId = "";
 
-                            for (const [distanceSellerId, distance] of Object.entries(distancesDict)) {
-                                if (distance < minDistance) {
-                                    minDistance = distance;
-                                    closestSellerId = distanceSellerId;
+                            for (const [sellerId, duration] of Object.entries(distancesDict)) {
+                                if (duration < minDuration) {
+                                    minDuration = duration;
+                                    closestSellerId = sellerId;
                                 }
                             }
 
                             if (secondsLimit ? distancesDict[closestSellerId] <= secondsLimit : true) {
-                                const closestHospital = hospitalsDict[blockHospital];
+                                const closestHospital = hospitalsDict[storedHospitalId];
                                 const closestSeller = sellersDict[closestSellerId];
 
                                 closestHospital.seller = closestSeller;
                                 closestSeller.hospitals.push(closestHospital);
                             }
 
-                            blockHospital = hospital.id
+                            storedHospitalId = currentHospital.id
 
-                            distancesDict = { [seller.id]: distanceLine.duration.value }
+                            distancesDict = { [currentSeller.id]: distanceLine.duration.value }
                         } else {
-                            distancesDict[seller.id] = distanceLine.duration.value;
+                            distancesDict[currentSeller.id] = distanceLine.duration.value;
                         }
                     } else {
-                        throw new Error(`Seller not found: ${sellerId}`)
+                        throw new Error(`Seller not found: ${currentSellerId}`)
                     }
                 } else {
-                    throw new Error(`Hospital not found: ${hospitalId}`)
+                    throw new Error(`Hospital not found: ${currentHospitalId}`)
                 }
             } catch (error) {
                 console.error("Error parsing line:", line, error);
@@ -452,7 +487,7 @@ async function assignHospitalsToSellers(hospitalsDict, sellersDict, secondsLimit
         };
 
         let line = ""
-        let blockHospital = ""
+        let storedHospitalId = ""
         /** @type {Object<string, number>}>} */
         let distancesDict = Object.create(null)
 
@@ -566,60 +601,59 @@ async function assignSellersToAreasByHospitalDistance(areasDict, hospitalsDict, 
                     const distanceLine = JSON.parse(line);
 
                     // @ts-ignore
-                    const areaId = distanceLine["area"];
+                    const currentAreaId = distanceLine["area"];
 
-                    const area = areasDict[areaId]
+                    const currentArea = areasDict[currentAreaId]
 
-                    if (area) {
-                        if (!blockAreaId) {
-                            blockAreaId = area.id;
-                        }
+                    if (currentArea) {
 
-                        if (!area.seller) {
+                        if (!currentArea.seller) {
+
+                            if (!storedAreaId) {
+                                storedAreaId = currentArea.id;
+                            }
+
                             // @ts-ignore
-                            const hospitalId = distanceLine["hospital"]
+                            const currentHospitalId = distanceLine["hospital"]
 
-                            const hospital = hospitalsDict[hospitalId];
+                            const currentHospital = hospitalsDict[currentHospitalId];
 
-                            if (hospital) {
-                                if (blockAreaId != area.id || lastLine) {
-                                    let minDistance = Number.MAX_VALUE;
+                            if (currentHospital) {
+                                if (storedAreaId != currentArea.id || lastLine) {
+                                    let minDuration = Number.MAX_VALUE;
                                     let closestHospitalId = "";
 
-                                    for (const [distanceHospitalId, distance] of Object.entries(distancesDict)) {
-                                        if (distance < minDistance) {
-                                            minDistance = distance;
-                                            closestHospitalId = distanceHospitalId;
+                                    for (const [hospitalId, duration] of Object.entries(distancesDict)) {
+                                        if (duration < minDuration) {
+                                            minDuration = duration;
+                                            closestHospitalId = hospitalId;
                                         }
                                     }
-                                    
-                                    console.log(closestHospitalId)
-                                    console.log(distancesDict)
 
                                     if (secondsLimit ? distancesDict[closestHospitalId] <= secondsLimit : true) {
-                                        const closestArea = areasDict[blockAreaId];
+                                        const closestArea = areasDict[storedAreaId];
                                         const closestHospital = hospitalsDict[closestHospitalId];
-                                        
-                                        if (closestHospital.seller) {
+
+                                        if (closestHospital.seller != null) {
                                             closestArea.seller = closestHospital.seller
                                             closestHospital.seller.areas.push(closestArea)
                                         } else {
-                                            throw new Error(`Hospital doesn't contain seller: ${closestHospital}`)
+                                            console.info(`Hospital doesn't contain seller: ${closestHospital}`)
                                         }
                                     }
 
-                                    blockAreaId = hospital.id
+                                    storedAreaId = currentArea.id
 
-                                    distancesDict = { [hospital.id]: distanceLine.duration.value }
+                                    distancesDict = { [currentHospital.id]: distanceLine.duration.value }
                                 } else {
-                                    distancesDict[hospital.id] = distanceLine.duration.value;
+                                    distancesDict[currentHospital.id] = distanceLine.duration.value;
                                 }
                             } else {
-                                throw new Error(`Hospital not found: ${hospitalId}`)
+                                throw new Error(`Hospital not found: ${currentHospitalId}`)
                             }
                         }
                     } else {
-                        throw new Error(`Area not found: ${areaId}`)
+                        throw new Error(`Area not found: ${currentAreaId}`)
                     }
                 } catch (error) {
                     console.error("Error parsing line:", line, error);
@@ -627,7 +661,7 @@ async function assignSellersToAreasByHospitalDistance(areasDict, hospitalsDict, 
             };
 
             let line = ""
-            let blockAreaId = ""
+            let storedAreaId = ""
             /** @type {Object<string, number>}>} */
             let distancesDict = Object.create(null)
 
@@ -667,6 +701,27 @@ async function assignSellersToAreasByHospitalDistance(areasDict, hospitalsDict, 
 /**
  * 
  * @param {MapManager} mapManager 
+ * @param {Object<string, Municipality | Locality>} areasDict 
+ */
+async function searchAreas(mapManager, areasDict) {
+    const searchedAreas = []
+
+    let counter = 0
+    const total = Object.values(areasDict).length
+
+    for (const area of Object.values(areasDict)) {
+        counter++
+        const searchedArea = await mapManager.map.getNearbyPlace(area.name, "", area,)
+        console.log(`[${counter} de ${total}] | ${area.name}`)
+        searchedAreas.push(searchedArea)
+    }
+
+    return searchedAreas
+}
+
+/**
+ * 
+ * @param {MapManager} mapManager 
  * @param {Hospital[]} hospitalsDict 
  */
 async function searchHospitals(mapManager, hospitalsDict) {
@@ -674,7 +729,7 @@ async function searchHospitals(mapManager, hospitalsDict) {
 
     for (const hospital of Object.values(hospitalsDict)) {
         if (hospital.area) {
-            const searchedHospital = await mapManager.map.getNearbyPlace(hospital.name, hospital.area, "hospital")
+            const searchedHospital = await mapManager.map.getNearbyPlace(hospital.name, "hospital", hospital.area)
             searchedHospitals.push(searchedHospital)
         }
     }
