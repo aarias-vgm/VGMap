@@ -1,0 +1,15 @@
+<template id="circular-marker-template">
+    <div class="marker circular-marker" style="position: relative; display: inline-flex; vertical-align: middle;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="37" height="37" viewBox="0 0 37 37" fill="none" style="overflow: visible; pointer-events: none;">
+            <g fill="none" fill-rule="evenodd" style="pointer-events: auto; cursor: pointer;">
+                <rect class="marker-back" fill="#FFFFFF" width="37" height="37" rx="18.5"></rect>
+                <rect class="marker-border" fill="none" stroke="#FFFFFF" stroke-width="2" x="0" y="0" width="37" height="37" rx="18.5"></rect>
+            </g>
+        </svg>
+        <div class="marker-icon-wrapper" style="color: #ffffff; display: inline-flex; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none;">
+            <svg class="fa">
+                <use href=""></use>
+            </svg>
+        </div>
+    </div>
+</template>

@@ -10,14 +10,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mapa Colombia VG</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
-    <script src="https://use.fontawesome.com/releases/v6.1.0/js/all.js"></script>
+    <!-- <script src="https://use.fontawesome.com/releases/v6.1.0/js/all.js"></script> -->
     <link rel="stylesheet" href="src/styles/style.css">
+    <link rel="stylesheet" href="src/styles/fa-icon.css">
+    <link rel="stylesheet" href="src/styles/tooltip.css">
+    <link rel="stylesheet" href="src/styles/marker.css">
     <script type="module" src="src/scripts/main.js"></script>
 </head>
 
 <body>
-    <!-- <div id="navbar">
-    </div> -->
+    <svg id="vector-symbols" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" role="img" style="display:none; width: 0; height: 0;"></svg>
+    <div id="markers-templates"></div>
     <div id="map-container">
         <div id="map"></div>
         <div id="tooltip" style="pointer-events: none; user-select: none;"></div>
@@ -26,20 +29,6 @@
             <div id="click-tooltip" class="tooltip hidden" style="position: absolute; left: 0; top: 0;"></div>
             <div id="coords-tooltip" class="tooltip hidden" style="position: absolute; left: 0; top: 0;"></div>
         </div>
-        <div id="polygons">
-
-        </div>
-        <div id="box" style="width: 10px; height: 10px; background: red; position: absolute;"></div>
-        <!-- <div id="context-menu">
-            <button id="copy-coordinates-button" type="button">
-                <span>
-                    <i class="fa fa-copy"></i>
-                    <code>
-                        Copiar
-                    </code>
-                </span>
-            </button>
-        </div> -->
     </div>
     <footer>
     </footer>

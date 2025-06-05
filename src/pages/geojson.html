@@ -10,7 +10,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GeoJSON</title>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <script type="module" src="../pages/geojson.js"></script>
+    <script type="module" src="../scripts/utils/geojson.js"></script>
 </head>
 
 <body>
@@ -18,46 +18,71 @@
     <form>
         <div>
             <label for="id-key-1">ID key 1:</label>
-            <input type="text" id="id-key-1" value="" required>
+            <input id="id-key-1" type="text" style="width: 100px;" required>
             <!-- dpto_ccdgo -->
             <!-- mpio_cdpmp -->
-            <!-- id -->
+            <!-- LocCodigo -->
+            
+            <label for="id-key-1">Var key 1:</label>
+            <input id="var-key-1" type="text" style="width: 100px;">
+            <!--  -->
+            <!--  -->
+            <!-- 11001%localityId% -->
         </div>
         <br>
         <div>
             <span>Properties 1:</span>
             <br>
-            <textarea id="properties-1" required></textarea>
+            <textarea id="properties-1" rows="3" cols="25" required></textarea>
             <!-- dpto_cnmbr:name -->
             <!-- mpio_cnmbr:name, mpio_tipo:type, dpto_ccdgo:departmentId, dpto_cnmbr:departmentName -->
-            <!-- name:name, type:type, area:area, localityId:localityId, municipalityId:municipalityId, municipalityName:municipalityName -->
+            <!-- LocNombre:name, LocArea:area, LocCodigo:localityId -->
         </div>
         <br>
         <div>
             <label for="file-1" required>File 1:</label>
-            <input type="file" id="file-1" accept=".geojson">
+            <input id="file-1" type="file" accept=".geojson">
         </div>
         <br>
         <hr>
         <br>
         <div>
             <label for="id-key-2">ID key 2:</label>
-            <input type="text" id="id-key-2" value="">
+            <input id="id-key-2" type="text" style="width: 100px;">
             <!-- COD_DPTO -->
             <!-- COD_MPIO -->
+            <!-- LocCodigo -->
         </div>
         <br>
         <div>
             <span>Properties 2:</span>
             <br>
-            <textarea id="properties-2"></textarea>
-            <!-- AREA:area, POBTOT2025:population2025, DENTOT2025:density2025, POBTOT2035:population2035, DENTOT2035:density2035 -->
-            <!-- AREA:area, POBTOT2025:population2025, DENTOT2025:density2025, POBTOT2035:population2035, DENTOT2035:density2035 -->
+            <textarea id="properties-2" rows="3" cols="25"></textarea>
+            <!-- AREA:area, POBTOT2025:population2025, POBTOT2035:population2035, DENTOT2025:density2025, DENTOT2035:density2035 -->
+            <!-- AREA:area, POBTOT2025:population2025, POBTOT2035:population2035, DENTOT2025:density2025, DENTOT2035:density2035 -->
+            <!-- pop2025:population2025, pop2035:population2035, den2025:density2025, den2035:density2035 -->
         </div>
         <br>
         <div>
             <label for="file-2">File 2:</label>
-            <input type="file" id="file-2" accept=".geojson">
+            <input id="file-2" type="file" accept=".geojson">
+        </div>
+        <br>
+        <hr>
+        <br>
+        <div>
+            <label for="constants">Constants:</label>
+            <input id="constants" type="text">
+            <!-- type:DEPARTAMENTO -->
+            <!-- -->
+            <!-- type:LOCALIDAD; municipalityId:11001; municipalityName:BOGOTÁ, D.C. -->
+        </div>
+        <div>
+            <label for="area-factor">Area factor:</label>
+            <input id="area-factor" type="text" value="1" style="width: 50px;">
+            <!-- 1 -->
+            <!-- 1 -->
+            <!-- 0.000001 -->
         </div>
         <br>
         <div>

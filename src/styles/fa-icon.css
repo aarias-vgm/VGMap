@@ -1,0 +1,32 @@
+.fa {
+    width: 1.2em;
+    height: 1.2em;
+}
+
+.fa-2xs {
+    font-size: 0.5rem;
+}
+
+.fa-xs {
+    font-size: .75em;
+}
+
+.fa-sm {
+    font-size: .875em;
+}
+
+.fa-lg {
+    font-size: 1.25em;
+}
+
+.fa-xl {
+    font-size: 1.5em;
+}
+
+.fa-2xl {
+    font-size: 2em;
+}
+
+.fa-3xl {
+    font-size: 2.5em;
+}

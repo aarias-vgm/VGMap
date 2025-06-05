@@ -1,15 +1,17 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
-    "strict": true,
+    "target": "es2017",
+    "module": "esnext",
+    "baseUrl": "./scripts",
     "allowJs": true,
     "checkJs": true,
-    "target": "es2017",
-    "declaration": true,
+    "strict": true,
     "noImplicitAny": true,
+    "moduleResolution": "node",
+    "isolatedModules": true
   },
   "include": [
     "src/**/*.js",
-    "types/**/*.ts",
+    "types/**/*.ts", "ignore/tooltip copy.js",
   ],
 }

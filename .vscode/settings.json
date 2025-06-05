@@ -1,4 +1,6 @@
 {
+    "editor.dragAndDrop": true,
+    "editor.wordWrap": "off",
     "cSpell.allowCompoundWords": true,
     "cSpell.checkLimit": 1000,
     "cSpell.words": [
@@ -151,6 +153,7 @@
         "Urabá",
         "Uribe",
         "urología",
+        "Usaquén",
         "Varela",
         "Vásquez",
         "Vaupés",
@@ -164,9 +167,8 @@
         "Yumbo",
         "Zipaquirá"
     ],
-    "editor.dragAndDrop": false,
     "files.associations": {
-        "*.psv": "psv (pipe)"
+        "*.psv": "csv (pipe)"
     },
     "livePreview.autoRefreshPreview": "Never",
     "liveServer.settings.ignoreFiles": [
@@ -202,5 +204,5 @@
             "overviewRulerColor": "limeGreen",
             "text": "[!]"
         }
-    ]
+    ],
 }

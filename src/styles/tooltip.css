@@ -1,0 +1,121 @@
+/* .coords-icon {
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+.hospital .coords-icon {
+    transition: all 0.25s ease-in-out;
+}
+
+.hospital .coords-icon:hover {
+    font-size: larger;
+    color: #fff4f6 !important;
+}
+
+.seller .coords-icon {
+    transition: transform 0.25s ease-in-out;
+}
+
+.seller .coords-icon:hover {
+    right: 0;
+    bottom: 0;
+    transform: scale(1.25);
+    color: #f0fbff !important;
+}
+
+.tooltip {
+    display: block;
+    transform: translateX(-50%);
+    transition: all 0.25s ease-in-out;
+}
+
+.tooltip,
+.tooltip * {
+    user-select: none;
+    pointer-events: none;
+}
+
+#coords-tooltip {
+    user-select: none;
+}
+
+#in-tooltip {
+    max-width: 200px;
+    line-height: 1.25;
+    text-align: center;
+    cursor: pointer;
+}
+
+#in-tooltip .seller {
+    max-width: 200px;
+}
+
+#in-tooltip .hospital {
+    max-width: 300px;
+}
+
+#click-tooltip {
+    line-height: 1.1;
+    text-align: left;
+    pointer-events: auto;
+}
+
+#click-tooltip,
+#click-tooltip * {
+    user-select: text;
+}
+
+#coords-tooltip {
+    line-height: 1;
+    text-align: left;
+    pointer-events: auto;
+}
+
+#coords-tooltip button {
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+#coords-tooltip button:focus {
+    animation: flash-animation 0.25s ease-out;
+}
+
+.coords-icon {
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+@keyframes flash-animation {
+    0% {
+        filter: brightness(2);
+    }
+
+    100% {
+        filter: brightness(1);
+    }
+}
+
+#context-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    min-width: 50px;
+    background-color: #cccccc;
+    border-radius: 5px;
+}
+
+#context-menu>button {
+    background-color: transparent;
+    color: black;
+    border-top: 1px solid #ffffff;
+    border-bottom: 1px solid #ffffff;
+}
+
+#context-menu>button>span {
+    width: 100%;
+    display: inline-block;
+    text-align: left;
+} */

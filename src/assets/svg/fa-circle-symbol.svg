@@ -1,0 +1,4 @@
+<symbol id="fa-circle-symbol" viewBox="0 0 512 512" overflow="visible">
+    <path fill="currentColor" fill-rule="nonzero" stroke-linejoin="round" stroke-linecap="round"
+    d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512z" />
+</symbol>
